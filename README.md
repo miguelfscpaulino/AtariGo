@@ -1,0 +1,2 @@
+# Atari Go
+#AtariGo
