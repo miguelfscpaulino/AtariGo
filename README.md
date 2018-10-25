@@ -9,7 +9,7 @@ TO DO:
 
   -actions
 
-  -result
+  
   
   
 DONE:
@@ -17,3 +17,5 @@ DONE:
   -to move
 
   -load_board
+
+  -result
