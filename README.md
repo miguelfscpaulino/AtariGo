@@ -14,8 +14,8 @@ TO DO:
   
 DONE:
 
-  -to move
+  -to move (confirmar)
 
-  -load_board
+  -load_board (confirmar)
 
-  -result
+  -result (confirmar)
