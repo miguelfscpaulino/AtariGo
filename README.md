@@ -2,12 +2,17 @@
 #AtariGo
 
 TO DO:
--terminal_test
 
--utility
--actions
--result
+  -terminal_test
+
+  -utility
+
+  -actions
+
+  -result
   
 DONE:
--to move
--load_board
+
+  -to move
+
+  -load_board
