@@ -9,31 +9,41 @@ class state():
 		self.player = player
 		
 class game():
-		
+	"""docstring for state"""
+	def __init__(self, arg):
+		super(game, self).__init__()
+		self.state = state
 
 	def to_move(s):
-		#returns the player to move next given the state s
-		pass
+		#returns the player to move next, given the state "s"
+		return s.player
 		
 	def terminal_test(s):
-		#checks if state s is terminal
+		#checks if state "s" is terminal
 		pass
 
 	def utility(s,p):
- 		#returns payoff of state s if terminal or evaluation with respect to player		
+ 		#returns payoff of state "s" if terminal or evaluation with respect to player		
  		pass
 
 	def actions(s):
- 		#returns list of valid moves at state s		
+ 		#returns list of valid moves at state "s"		
  		pass
 
 	def result(s,a):
-		#returns the sucessor game state after playing move a at state s
+		#returns the sucessor game state after playing move "a" at state "s"
+		if a[0]==1:
+			s.player=2
+		else:
+			s.player=1
+
+		s.table[a[1]][a[2]]=a[0]
+
 		pass
 
 
 	def load_board(s):
-		#loads board from file stream s. returns corresponding state
+		#loads board from file stream "s". returns corresponding state
 		file = open(s, "r")
 		l=list(file.readline())
 		player= int(l[2])
@@ -106,4 +116,4 @@ if __name__ == '__main__':
 	import sys
 
 	g= game() 
-	g.load_board(sys.argv[1])
+	g.state= g.load_board(sys.argv[1])
