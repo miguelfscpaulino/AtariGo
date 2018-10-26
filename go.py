@@ -5,14 +5,15 @@ class state():
 	def __init__(self,mat,player):
 		self.table = mat
 		self.player = player
-
+		
 	def printstate():
 		print(self.player)
 
 class game():
 	"""docstring for state"""
 	def __init__(self,arg):
-		self.state=self.load_board(arg)
+		
+		self.state = self.load_board(arg)
 
 	def printstate():
 		self.state.printstate()
@@ -45,23 +46,29 @@ class game():
 		pass
 
 
-	def load_board(s):
+	def load_board(self,s):
 		#loads board from file stream "s". returns corresponding state
+		
 		file = open(s, "r")
 		l=list(file.readline())
 		player= int(l[2])
+		size = int(l[0])
 		mat = [[0 for x in range(int(l[0]))] for y in range(int(l[0]))] 
-
-		for i in range(int(l[0])):
+	
+		for i in range(size):
 			l=list(file.readline())
-			for h in range(int(l[0])):
+			for h in range(size):
+				
 				mat[i][h] =l[h]
 				pass
-			pass	
-			
-		state=state(mat,player)
+			pass
 
-		return state
+		print(mat)
+		print(player)
+		
+		
+
+		return state(mat,player)
 
 def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
@@ -119,8 +126,11 @@ if __name__ == '__main__':
 
 
 	#try:
-		g= game(sys.argv[1])
-		g.printstate()	
+	
+	g= game(sys.argv[1])
+
+	g.load_board(sys.argv[2])
+		#g.printstate()	
 	#except Exception as e:
 		#print("Please insert file name")
 
