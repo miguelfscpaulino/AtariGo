@@ -1,18 +1,21 @@
-
-
+import sys
 
 class state():
 	"""docstring for state"""
-	def __init__(self, arg):
-		super(state, self).__init__()
-		self.table = table
+	def __init__(self,mat,player):
+		self.table = mat
 		self.player = player
-		
+
+	def printstate():
+		print(self.player)
+
 class game():
 	"""docstring for state"""
-	def __init__(self, arg):
-		super(game, self).__init__()
-		self.state = state
+	def __init__(self,arg):
+		self.state=self.load_board(arg)
+
+	def printstate():
+		self.state.printstate()
 
 	def to_move(s):
 		#returns the player to move next, given the state "s"
@@ -113,7 +116,14 @@ def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
 
 
 if __name__ == '__main__':
-	import sys
 
-	g= game() 
-	g.state= g.load_board(sys.argv[1])
+
+	#try:
+		g= game(sys.argv[1])
+		g.printstate()	
+	#except Exception as e:
+		#print("Please insert file name")
+
+	
+		
+
