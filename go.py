@@ -1,104 +1,119 @@
 import sys
 
-class state():
-	"""docstring for state"""
-	def __init__(self,mat,player,filled,dim):
-		self.mat = mat
-		self.player = player
-		self.filled = filled
-		self.dim = dim
+class State():
+    """docstring for class State"""
 
-	def getMat():
-		return self.mat
+    def __init__(self, mat, player, filled, dim):
+        self.mat = mat
+        self.player = player
+        self.filled = filled
+        self.dim = dim
 
-	def getPlayer():
-		return self.player
-	
-	def getFilled():
-		return self.filled	
+    def getMat():
+        return self.mat
 
-	def getDim():
-		return self.dim
+    def getPlayer():
+        return self.player
 
-	def printState(self):
-		print(self.player)
-		print(self.mat)
-		print(self.filled)
+    def getFilled():
+        return self.filled
 
-class game():
-	"""docstring for state"""
-	def __init__(self,arg):
-		
-		self.state = self.load_board(arg)
+    def getDim():
+        return self.dim
 
-	def printState(self):
-		self.state.printState()
+    def setMat(m):
+        self.mat = m
 
-	def to_move(self,s):
-		#returns the player to move next, given the state "s"
-		return s.player
-		
-	def terminal_test(self,s):
-		#checks if state "s" is terminal
-		auxFilled = self.state.getFilled()
-		auxMat = self.state.getMat()
-		size = self.state.getDim()
+    def setPlayer(p):
+        self.player = p
 
-		# for i in auxFilled
+    def setFilled(f):
+        self.filled = f
 
-		# 	if i[1]-1 >= 0:
-		# 		if auxMat[i[1]-1][]
-				
+    def setDim(d):
+        self.dim = d
+
+    def printState(self):
+        print('State::')
+        print('Player: ' + str(self.player))
+        print('Board: ')
+        print(self.mat)
+        print('Occupied positions: ')
+        print(self.filled)
 
 
-		# 	if (i[1]-1 or i[2]-1)< 0 or (i[1]+1 or i[2]+1) > (size-1)
-		# 		continue
+class Game():
+    """docstring for class Game"""
 
+    #def __init__(self, arg):
+    #    self.state = self.load_board(arg)
 
+    def getState(self):
+        return self.state
 
-	def utility(s,p):
- 		#returns payoff of state "s" if terminal or evaluation with respect to player		
- 		pass
+    def to_move(self, s):
+        #returns the player to move next, given the state "s"
+        return s.getPlayer()
 
-	def actions(s):
- 		#returns list of valid moves at state "s"		
- 		pass
+    def terminal_test(self, s):
+        #checks if state "s" is terminal
+        auxFilled = self.state.getFilled()
+        auxMat = self.state.getMat()
+        dim = self.state.getDim()
 
-	def result(s,a):
-		#returns the sucessor game state after playing move "a" at state "s"
-		if a[0]==1:
-			s.player=2
-		else:
-			s.player=1
+        # for i in auxFilled
+            # 	if i[1]-1 >= 0:
+            # 		if auxMat[i[1]-1][]
+            # 	if (i[1]-1 or i[2]-1)< 0 or (i[1]+1 or i[2]+1) > (size-1)
+            # 		continue
 
-		s.table[a[1]][a[2]]=a[0]
+    def utility(s, p):
+        #returns payoff of state "s" if terminal or evaluation with respect to player
+        pass
 
+    def actions(s):
+        #returns list of valid moves at state "s"
+        pass
 
+    def result(s, a):
+        #returns the sucessor game state after playing move "a" at state "s"
+        if a[0] == 1:
+            s.setPlayer(2)
+        else:
+            s.setPlayer(1)
 
-	#TODO make the actual game!!!???
-		
+        print('printing player inside result')
+        print(s.player)
 
+        s.table[a[1]][a[2]] = a[0]
 
-	def load_board(self,s):
-		#loads board from file stream "s". returns corresponding state
-		
-		file = open(s, "r")
-		l=list(file.readline())
-		player= int(l[2])
-		size = int(l[0])
-		aux = []
+        #TODO make the actual game!!!???
 
-		mat = [[0 for x in range(int(l[0]))] for y in range(int(l[0]))] 
-	
-		for i in range(size):
-			l=list(file.readline())
-			for h in range(size):
-				mat[i][h] = int(l[h])
-				if int(l[h])!= 0:
-					aux.append((int(l[h]),h+ size*i + 1))
-					print('h: ' + str(h) + ' i: ' + str(i))
+    def load_board(self, s):
+        #loads board from file stream "s". returns corresponding state
 
-		return state(mat,player,aux,size)
+        try:
+            file = open(s, "r")
+        except IOError:
+            print("Error: couldn't open board file")
+            sys.exit()
+
+        l = list(file.readline())
+        player = int(l[2])
+        size = int(l[0])
+        aux = []
+
+        mat = [[0 for x in range(int(l[0]))] for y in range(int(l[0]))]
+
+        for i in range(size):
+            l = list(file.readline())
+            for h in range(size):
+                mat[i][h] = int(l[h])
+                if int(l[h]) != 0:
+                    aux.append((int(l[h]),h+ size*i + 1))
+
+        self.state = State(mat, player, aux, size)
+        return self.state
 
 def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
@@ -148,21 +163,13 @@ def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     return best_action
 
 
-
-
-
-
+# Main function
 if __name__ == '__main__':
 
+    g = Game()
 
-	#try:
-	
-	g= game(sys.argv[1])
-	g.printState()
-		#g.printstate()	
-	#except Exception as e:
-		#print("Please insert file name")
-
-	
-		
-
+    try:
+        s = g.load_board(sys.argv[1])
+    except IndexError:
+        print('Error: Please insert file name in args')
+        sys.exit()
