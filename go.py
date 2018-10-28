@@ -10,16 +10,46 @@ class State():
         self.dim = dim
 
     def closedCheck(self, f):
-        c1 = False
+        c1 = True
+        c2 = True
+        c3 = True
+        c4 = True
 
+
+        print('f:')
+        print(f)
         #coord = ind2coord(f[1], self.dim)
 
         if (f[1] - self.dim) >= 0:
             l = [item for item in self.filled if item[1] == (f[1] - self.dim)]
-            if f[0] != l[0][0]:
-                c1 = True
+            print('l: ')
+            print(l)
+            if not l or (f[0] == l[0][0]):
+                c1 = False
 
-        if c1:
+        if (f[1] + self.dim) < self.dim*self.dim:
+            l = [item for item in self.filled if item[1] == (f[1] + self.dim)]
+            print('l: ')
+            print(l)
+            if not l or (f[0] == l[0][0]):
+                c2 = False
+
+        if (f[1] % self.dim) != 0:
+            l = [item for item in self.filled if item[1] == (f[1] - 1)]
+            print('l: ')
+            print(l)
+            if not l or (f[0] == l[0][0]):
+                c3 = False
+
+        if ((f[1] + 1) % self.dim) != 0:
+            l = [item for item in self.filled if item[1] == (f[1] + 1)]
+            print('l: ')
+            print(l)
+            if not l or (f[0] == l[0][0]):
+                c4 = False
+
+        print('c1: ' + str(c1) + ', c2: ' + str(c2) + ', c3: ' + str(c3) + ', c4: ' + str(c4))
+        if c1 and c2 and c3 and c4:
             return 1
         else:
             return -1
@@ -117,8 +147,9 @@ class Game():
             print("Error: couldn't open board file")
             sys.exit()
 
-        l = list(file.readline())
-        player = int(l[2])
+        l = file.readline().split(' ')
+        print(l)
+        player = int(l[1])
         size = int(l[0])
         aux = []
 
@@ -195,7 +226,7 @@ if __name__ == '__main__':
     try:
         s = g.load_board(sys.argv[1])
     except IndexError:
-        print('Error: Please insert file name in args')
+        print('Error: Filename not provided or invalid open/read')
         sys.exit()
 
     s.printState()
