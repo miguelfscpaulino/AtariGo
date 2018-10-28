@@ -9,16 +9,31 @@ class State():
         self.filled = filled
         self.dim = dim
 
-    def getMat():
+    def closedCheck(self, f):
+        c1 = False
+
+        #coord = ind2coord(f[1], self.dim)
+
+        if (f[1] - self.dim) >= 0:
+            l = [item for item in self.filled if item[1] == (f[1] - self.dim)]
+            if f[0] != l[0][0]:
+                c1 = True
+
+        if c1:
+            return 1
+        else:
+            return -1
+
+    def getMat(self):
         return self.mat
 
-    def getPlayer():
+    def getPlayer(self):
         return self.player
 
-    def getFilled():
+    def getFilled(self):
         return self.filled
 
-    def getDim():
+    def getDim(self):
         return self.dim
 
     def setMat(m):
@@ -57,15 +72,19 @@ class Game():
 
     def terminal_test(self, s):
         #checks if state "s" is terminal
+        terminal = False
         auxFilled = self.state.getFilled()
         auxMat = self.state.getMat()
         dim = self.state.getDim()
 
-        # for i in auxFilled
-            # 	if i[1]-1 >= 0:
-            # 		if auxMat[i[1]-1][]
-            # 	if (i[1]-1 or i[2]-1)< 0 or (i[1]+1 or i[2]+1) > (size-1)
-            # 		continue
+        for i in auxFilled:
+            check = self.state.closedCheck(i)
+            print('check: ' + str(check))
+            if check == 1:
+                terminal = True
+                break
+
+        return terminal
 
     def utility(s, p):
         #returns payoff of state "s" if terminal or evaluation with respect to player
@@ -110,7 +129,7 @@ class Game():
             for h in range(size):
                 mat[i][h] = int(l[h])
                 if int(l[h]) != 0:
-                    aux.append((int(l[h]),h+ size*i + 1))
+                    aux.append((int(l[h]), coord2ind(h, i, size)))
 
         self.state = State(mat, player, aux, size)
         return self.state
@@ -162,6 +181,11 @@ def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
             best_action = a
     return best_action
 
+def coord2ind(x, y, s):
+    return x + s*y
+
+def ind2coord(i, s):
+    return (int(i / s), i % s)
 
 # Main function
 if __name__ == '__main__':
@@ -173,3 +197,6 @@ if __name__ == '__main__':
     except IndexError:
         print('Error: Please insert file name in args')
         sys.exit()
+
+    s.printState()
+    print(g.terminal_test(s))
