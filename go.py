@@ -9,54 +9,108 @@ class State():
         self.filled = filled
         self.dim = dim
 
-    def closed_check(self, f):
+    def closed_check(self, f, g=[]):
         """Checks if a position is closed. Recursively calls itself to check
         groups. Returns 1 if it's closed, -1 if it's open, 0 if need to
         check neighbours (group found)"""
 
-        # Surronding position flags
+        ferr = open('err.txt', 'a')
+
+         # Surronding position flags
         c1 = True
         c2 = True
         c3 = True
         c4 = True
 
-
-        print('f:')
-        print(f)
+        print('f: ' + str(f) + ', g: ' + str(g))
+        ferr.write('f: ' + str(f) + ', g: ' + str(g) + '\n')
 
         # If top position is occupied, checks if occupied with another player
-        if (f[1] - self.dim) >= 0:
+        if (f[1] - self.dim) >= 0 and (not g or
+            not [item for item in g if (item[0] == f[0] and item[1] == (f[1]-self.dim))]):
+
             l = [item for item in self.filled if item[1] == (f[1] - self.dim)]
-            print('l: ')
-            print(l)
-            if not l or (f[0] == l[0][0]):
-                c1 = False
+            print('l: ' + str(l))
+            ferr.write('l: ' + str(l) + '\n')
+            if not l:
+                return -1
+                #c1 = False
+            elif f[0] == l[0][0] and f not in g:
+                g.append(f)
+                print('CALLING RECURS')
+                ferr.write('CALLING RECURS' + '\n')
+                b = self.closed_check(l[0], g)
+                while f in g:
+                    g.remove(f)
+                if b == -1:
+                    c1 = False
+
+
 
         # If down position is occupied, checks if occupied with another player
-        if (f[1] + self.dim) < self.dim*self.dim:
+        if (f[1] + self.dim) < self.dim*self.dim and (not g or
+            not [item for item in g if (item[0] == f[0] and item[1] == (f[1]+self.dim))]):
+
             l = [item for item in self.filled if item[1] == (f[1] + self.dim)]
-            print('l: ')
-            print(l)
-            if not l or (f[0] == l[0][0]):
-                c2 = False
+            print('l: ' + str(l))
+            ferr.write('l: ' + str(l) + '\n')
+            if not l:
+                return -1
+                #c2 = False
+            elif f[0] == l[0][0] and f not in g:
+                g.append(f)
+                print('CALLING RECURS')
+                ferr.write('CALLING RECURS' + '\n')
+                b = self.closed_check(l[0], g)
+                while f in g:
+                    g.remove(f)
+                if b == -1:
+                    c2 = False
+
 
         # If left position is occupied, checks if occupied with another player
-        if (f[1] % self.dim) != 0:
+        if (f[1] % self.dim) != 0 and (not g or
+            not [item for item in g if (item[0] == f[0] and item[1] == (f[1]-1))]):
+
             l = [item for item in self.filled if item[1] == (f[1] - 1)]
-            print('l: ')
-            print(l)
-            if not l or (f[0] == l[0][0]):
-                c3 = False
+            print('l: ' + str(l))
+            ferr.write('l: ' + str(l) + '\n')
+            if not l:
+                return -1
+                #c3 = False
+            elif f[0] == l[0][0] and f not in g:
+                g.append(f)
+                print('CALLING RECURS')
+                ferr.write('CALLING RECURS' + '\n')
+                b = self.closed_check(l[0], g)
+                while f in g:
+                    g.remove(f)
+                if b == -1:
+                    c3 = False
+
 
         # If right position is occupied, checks if occupied with another player
-        if ((f[1] + 1) % self.dim) != 0:
+        if ((f[1] + 1) % self.dim) != 0 and (not g or
+            not [item for item in g if (item[0] == f[0] and item[1] == (f[1]+1))]):
+
             l = [item for item in self.filled if item[1] == (f[1] + 1)]
-            print('l: ')
-            print(l)
-            if not l or (f[0] == l[0][0]):
-                c4 = False
+            print('l: ' + str(l))
+            ferr.write('l: ' + str(l) + '\n')
+            if not l:
+                return -1
+                #c4 = False
+            elif f[0] == l[0][0] and f not in g:
+                g.append(f)
+                print('CALLING RECURS')
+                ferr.write('CALLING RECURS' + '\n')
+                b = self.closed_check(l[0], g)
+                while f in g:
+                    g.remove(f)
+                if b == -1:
+                    c4 = False
 
         print('c1: ' + str(c1) + ', c2: ' + str(c2) + ', c3: ' + str(c3) + ', c4: ' + str(c4))
+        ferr.write('c1: ' + str(c1) + ', c2: ' + str(c2) + ', c3: ' + str(c3) + ', c4: ' + str(c4) + '\n')
         if c1 and c2 and c3 and c4:
             return 1
         else:
@@ -93,6 +147,20 @@ class State():
         print(self.mat)
         print('Occupied positions: ')
         print(self.filled)
+        ferr = open('err.txt', 'a')
+        ferr.write('State::')
+        ferr.write('\n')
+        ferr.write('Player: ' + str(self.player))
+        ferr.write('\n')
+        ferr.write('Board: ')
+        ferr.write('\n')
+        ferr.write(str(self.mat))
+        ferr.write('\n')
+        ferr.write('Occupied positions: ')
+        ferr.write('\n')
+        ferr.write(str(self.filled))
+        ferr.write('\n')
+        ferr.close()
 
 
 class Game():
@@ -116,10 +184,23 @@ class Game():
         dim = self.state.getDim()
 
         # Checks if each filled position of the board is closed (no liberties)
-        #TODO check with groups
+        print('auxfilled ' + str(auxFilled))
+        ferr = open('err.txt', 'a')
+        ferr.write('auxfilled ' + str(auxFilled))
+        ferr.write('\n')
+        ferr.close()
         for i in auxFilled:
+            print('i: ' + str(i))
+            ferr = open('err.txt', 'a')
+            ferr.write('i: ' + str(i))
+            ferr.write('\n')
+            ferr.close()
             check = self.state.closed_check(i)
             print('check: ' + str(check))
+            ferr = open('err.txt', 'a')
+            ferr.write('check: ' + str(check))
+            ferr.write('\n')
+            ferr.close()
             if check == 1:
                 terminal = True
                 break
@@ -238,6 +319,8 @@ def ind2coord(i, s):
 # Main function
 if __name__ == '__main__':
 
+    ferr = open('err.txt', 'w')
+    ferr.close()
     g = Game()
 
     try:
@@ -247,4 +330,9 @@ if __name__ == '__main__':
         sys.exit()
 
     s.printState()
-    print(g.terminal_test(s))
+    test = g.terminal_test(s)
+    print('\n\nTerminal: ' + str(test))
+    ferr = open('err.txt', 'a')
+    ferr.write('\n\nTerminal: ' + str(test))
+    ferr.write('\n')
+    ferr.close()
