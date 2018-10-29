@@ -9,7 +9,12 @@ class State():
         self.filled = filled
         self.dim = dim
 
-    def closedCheck(self, f):
+    def closed_check(self, f):
+        """Checks if a position is closed. Recursively calls itself to check
+        groups. Returns 1 if it's closed, -1 if it's open, 0 if need to
+        check neighbours (group found)"""
+
+        # Surronding position flags
         c1 = True
         c2 = True
         c3 = True
@@ -18,8 +23,8 @@ class State():
 
         print('f:')
         print(f)
-        #coord = ind2coord(f[1], self.dim)
 
+        # If top position is occupied, checks if occupied with another player
         if (f[1] - self.dim) >= 0:
             l = [item for item in self.filled if item[1] == (f[1] - self.dim)]
             print('l: ')
@@ -27,6 +32,7 @@ class State():
             if not l or (f[0] == l[0][0]):
                 c1 = False
 
+        # If down position is occupied, checks if occupied with another player
         if (f[1] + self.dim) < self.dim*self.dim:
             l = [item for item in self.filled if item[1] == (f[1] + self.dim)]
             print('l: ')
@@ -34,6 +40,7 @@ class State():
             if not l or (f[0] == l[0][0]):
                 c2 = False
 
+        # If left position is occupied, checks if occupied with another player
         if (f[1] % self.dim) != 0:
             l = [item for item in self.filled if item[1] == (f[1] - 1)]
             print('l: ')
@@ -41,6 +48,7 @@ class State():
             if not l or (f[0] == l[0][0]):
                 c3 = False
 
+        # If right position is occupied, checks if occupied with another player
         if ((f[1] + 1) % self.dim) != 0:
             l = [item for item in self.filled if item[1] == (f[1] + 1)]
             print('l: ')
@@ -107,8 +115,10 @@ class Game():
         auxMat = self.state.getMat()
         dim = self.state.getDim()
 
+        # Checks if each filled position of the board is closed (no liberties)
+        #TODO check with groups
         for i in auxFilled:
-            check = self.state.closedCheck(i)
+            check = self.state.closed_check(i)
             print('check: ' + str(check))
             if check == 1:
                 terminal = True
@@ -148,19 +158,24 @@ class Game():
             sys.exit()
 
         l = file.readline().split(' ')
-        print(l)
         player = int(l[1])
         size = int(l[0])
-        aux = []
 
-        mat = [[0 for x in range(int(l[0]))] for y in range(int(l[0]))]
+        # Python way of creatig map and filled with 3 lines of code
+        # Reads file and creates list of lists of integers with the board
+        l = [line.rstrip('\n') for line in file.readlines()]
+        mat = [list(map(int, list(i))) for i in l]
+        # List of tuples with filled positions of the board
+        aux = [(mat[x][y], coord2ind(y, x, size)) for x in range(size) for y in range(size) if mat[x][y] != 0]
 
-        for i in range(size):
-            l = list(file.readline())
-            for h in range(size):
-                mat[i][h] = int(l[h])
-                if int(l[h]) != 0:
-                    aux.append((int(l[h]), coord2ind(h, i, size)))
+        # "C" style way
+#        mat = [[0 for x in range(int(l[0]))] for y in range(int(l[0]))]
+#        for i in range(size):
+#            l = list(file.readline())
+#            for h in range(size):
+#                mat[i][h] = int(l[h])
+#                if int(l[h]) != 0:
+#                    aux.append((int(l[h]), coord2ind(h, i, size)))
 
         self.state = State(mat, player, aux, size)
         return self.state
@@ -212,9 +227,11 @@ def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
             best_action = a
     return best_action
 
+# Converts 2-D coordinates of a matrix in a positive integer index
 def coord2ind(x, y, s):
     return x + s*y
 
+# Converts index of a matrix into 2-D coordinates
 def ind2coord(i, s):
     return (int(i / s), i % s)
 
