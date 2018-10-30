@@ -1,9 +1,6 @@
 # Atari Go
-#AtariGo
 
 TO DO:
-
-  -terminal_test
 
   -utility
 
@@ -14,8 +11,10 @@ TO DO:
   
 DONE:
 
-  -to move (confirmar)
+  -load_board
 
-  -load_board (confirmar)
+  -terminal_test
+
+  -to move (confirmar)
 
   -result (confirmar)
