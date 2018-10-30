@@ -9,112 +9,154 @@ class State():
         self.filled = filled
         self.dim = dim
 
-    def closed_check(self, f, g=[]):
-        """Checks if a position is closed. Recursively calls itself to check
-        groups. Returns 1 if it's closed, -1 if it's open, 0 if need to
-        check neighbours (group found)"""
+    def closed_check(self, curr, checked=[]):
+        """Checks if a position/group adjacent is closed. Returns True if yes"""
 
-        ferr = open('err.txt', 'a')
-
-         # Surronding position flags
-        c1 = True
-        c2 = True
-        c3 = True
-        c4 = True
-
-        print('f: ' + str(f) + ', g: ' + str(g))
-        ferr.write('f: ' + str(f) + ', g: ' + str(g) + '\n')
-
-        # If top position is occupied, checks if occupied with another player
-        if (f[1] - self.dim) >= 0 and (not g or
-            not [item for item in g if (item[0] == f[0] and item[1] == (f[1]-self.dim))]):
-
-            l = [item for item in self.filled if item[1] == (f[1] - self.dim)]
-            print('l: ' + str(l))
-            ferr.write('l: ' + str(l) + '\n')
-            if not l:
-                return -1
-                #c1 = False
-            elif f[0] == l[0][0] and f not in g:
-                g.append(f)
-                print('CALLING RECURS')
-                ferr.write('CALLING RECURS' + '\n')
-                b = self.closed_check(l[0], g)
-                while f in g:
-                    g.remove(f)
-                if b == -1:
-                    c1 = False
+        print('\nStarting close_check:')
+        print('curr: ' + str(curr))
+        print('checked: ' + str(checked) + '\n')
 
 
+        # Checks top position
+        if (curr[1] - self.dim) >= 0:
 
-        # If down position is occupied, checks if occupied with another player
-        if (f[1] + self.dim) < self.dim*self.dim and (not g or
-            not [item for item in g if (item[0] == f[0] and item[1] == (f[1]+self.dim))]):
+            # Checks if top was already checked
+            up = [item for item in checked if item[0][1] == (curr[1]-self.dim)]
+            print('up: '+ str(up))
+            if up:
+                # Checks if top pos is free
+                if up[0][0][0] == curr[0] and up[0][1] == False:
+                    checked.append([curr, False])
+                    return False
+            else:
+                # Checks if top is filled
+                up = [item for item in self.filled if item[1] == (curr[1]-self.dim)]
+                print('up: '+ str(up))
 
-            l = [item for item in self.filled if item[1] == (f[1] + self.dim)]
-            print('l: ' + str(l))
-            ferr.write('l: ' + str(l) + '\n')
-            if not l:
-                return -1
-                #c2 = False
-            elif f[0] == l[0][0] and f not in g:
-                g.append(f)
-                print('CALLING RECURS')
-                ferr.write('CALLING RECURS' + '\n')
-                b = self.closed_check(l[0], g)
-                while f in g:
-                    g.remove(f)
-                if b == -1:
-                    c2 = False
+                if not up:     # Top pos is free
+                    checked.append([curr, False])
+                    return False
+                else:           # Top is filled
 
-
-        # If left position is occupied, checks if occupied with another player
-        if (f[1] % self.dim) != 0 and (not g or
-            not [item for item in g if (item[0] == f[0] and item[1] == (f[1]-1))]):
-
-            l = [item for item in self.filled if item[1] == (f[1] - 1)]
-            print('l: ' + str(l))
-            ferr.write('l: ' + str(l) + '\n')
-            if not l:
-                return -1
-                #c3 = False
-            elif f[0] == l[0][0] and f not in g:
-                g.append(f)
-                print('CALLING RECURS')
-                ferr.write('CALLING RECURS' + '\n')
-                b = self.closed_check(l[0], g)
-                while f in g:
-                    g.remove(f)
-                if b == -1:
-                    c3 = False
+                    # Checks if top position is filled with an equal piece
+                    if up[0][0] == curr[0]:
+                        i = [curr, True]
+                        if i not in checked:
+                            checked.append(i)
+                        # Checks if group on top of current is closed
+                        if not self.closed_check(up[0], checked):
+                            while i in checked:
+                                checked.remove(i)
+                            checked.append([curr, False])
+                            return False
 
 
-        # If right position is occupied, checks if occupied with another player
-        if ((f[1] + 1) % self.dim) != 0 and (not g or
-            not [item for item in g if (item[0] == f[0] and item[1] == (f[1]+1))]):
+        # Checks bottom position
+        if (curr[1] + self.dim) < self.dim*self.dim:
 
-            l = [item for item in self.filled if item[1] == (f[1] + 1)]
-            print('l: ' + str(l))
-            ferr.write('l: ' + str(l) + '\n')
-            if not l:
-                return -1
-                #c4 = False
-            elif f[0] == l[0][0] and f not in g:
-                g.append(f)
-                print('CALLING RECURS')
-                ferr.write('CALLING RECURS' + '\n')
-                b = self.closed_check(l[0], g)
-                while f in g:
-                    g.remove(f)
-                if b == -1:
-                    c4 = False
+            # Checks if bottom was already checked
+            down = [item for item in checked if item[0][1] == (curr[1]+self.dim)]
+            print('down: '+ str(down))
+            if down:
+                # Checks if bottom pos is free
+                if down[0][0][0] == curr[0] and down[0][1] == False:
+                    checked.append([curr, False])
+                    return False
+            else:
+                # Checks if bottom is filled
+                down = [item for item in self.filled if item[1] == (curr[1]+self.dim)]
+                print('down: '+ str(down))
 
-        print('c1: ' + str(c1) + ', c2: ' + str(c2) + ', c3: ' + str(c3) + ', c4: ' + str(c4))
-        ferr.write('c1: ' + str(c1) + ', c2: ' + str(c2) + ', c3: ' + str(c3) + ', c4: ' + str(c4) + '\n')
-        if c1 and c2 and c3 and c4:
-            return 1
-        else:
-            return -1
+                if not down:    # Bottom pos is free
+                    checked.append([curr, False])
+                    return False
+                else:           # Bottom pos is filled
+
+                    # Checks if bottom position is filled with an equal piece
+                    if down[0][0] == curr[0]:
+                        i = [curr, True]
+                        if i not in checked:
+                            checked.append(i)
+                        # Checks if group on bottom of current is closed
+                        if not self.closed_check(down[0], checked):
+                            while i in checked:
+                                checked.remove(i)
+                            checked.append([curr, False])
+                            return False
+
+
+        # Checks left position
+        if (curr[1] % self.dim) != 0:
+
+            # Checks if left was already checked
+            left = [item for item in checked if item[0][1] == (curr[1]-1)]
+            print('left: '+ str(left))
+            if left:
+                # Checks if left pos is free
+                if left[0][0][0] == curr[0] and left[0][1] == False:
+                    checked.append([curr, False])
+                    return False
+            else:
+                # Checks if left is filled
+                left = [item for item in self.filled if item[1] == (curr[1]-1)]
+                print('left: '+ str(left))
+
+                if not left:    # Left pos is free
+                    checked.append([curr, False])
+                    return False
+                else:           # Left pos is filled
+
+                    # Checks if left position is filled with an equal piece
+                    if left[0][0] == curr[0]:
+                        i = [curr, True]
+                        if i not in checked:
+                            checked.append(i)
+                        # Checks if group on left of current is closed
+                        if not self.closed_check(left[0], checked):
+                            while i in checked:
+                                checked.remove(i)
+                            checked.append([curr, False])
+                            return False
+
+
+        # Checks right position
+        if ((curr[1]+1) % self.dim) != 0:
+
+            # Checks if right was already checked
+            right = [item for item in checked if item[0][1] == (curr[1]+1)]
+            print('right: '+ str(right))
+            if right:
+                # Checks if right pos is free
+                if right[0][0][0] == curr[0] and right[0][1] == False:
+                    checked.append([curr, False])
+                    return False
+            else:
+                # Checks if right is filled
+                right = [item for item in self.filled if item[1] == (curr[1]+1)]
+                print('right: '+ str(right))
+
+                if not right:   # Right pos is free
+                    checked.append([curr, False])
+                    return False
+                else:           # Right pos is filled
+
+                    # Checks if right position is filled with an equal piece
+                    if right[0][0] == curr[0]:
+                        i = [curr, True]
+                        if i not in checked:
+                            checked.append(i)
+                        # Checks if group on right of current is closed
+                        if not self.closed_check(right[0], checked):
+                            while i in checked:
+                                checked.remove(i)
+                            checked.append([curr, False])
+                            return False
+
+        if [curr, True] not in checked:
+            checked.append([curr, True])
+
+        return True
+
 
     def getMat(self):
         return self.mat
@@ -128,16 +170,16 @@ class State():
     def getDim(self):
         return self.dim
 
-    def setMat(m):
+    def setMat(self, m):
         self.mat = m
 
-    def setPlayer(p):
+    def setPlayer(self, p):
         self.player = p
 
-    def setFilled(f):
+    def setFilled(self, f):
         self.filled = f
 
-    def setDim(d):
+    def setDim(self, d):
         self.dim = d
 
     def printState(self):
@@ -147,27 +189,10 @@ class State():
         print(self.mat)
         print('Occupied positions: ')
         print(self.filled)
-        ferr = open('err.txt', 'a')
-        ferr.write('State::')
-        ferr.write('\n')
-        ferr.write('Player: ' + str(self.player))
-        ferr.write('\n')
-        ferr.write('Board: ')
-        ferr.write('\n')
-        ferr.write(str(self.mat))
-        ferr.write('\n')
-        ferr.write('Occupied positions: ')
-        ferr.write('\n')
-        ferr.write(str(self.filled))
-        ferr.write('\n')
-        ferr.close()
 
 
 class Game():
     """docstring for class Game"""
-
-    #def __init__(self, arg):
-    #    self.state = self.load_board(arg)
 
     def getState(self):
         return self.state
@@ -178,34 +203,22 @@ class Game():
 
     def terminal_test(self, s):
         #checks if state "s" is terminal
-        terminal = False
-        auxFilled = self.state.getFilled()
-        auxMat = self.state.getMat()
-        dim = self.state.getDim()
 
         # Checks if each filled position of the board is closed (no liberties)
-        print('auxfilled ' + str(auxFilled))
-        ferr = open('err.txt', 'a')
-        ferr.write('auxfilled ' + str(auxFilled))
-        ferr.write('\n')
-        ferr.close()
-        for i in auxFilled:
-            print('i: ' + str(i))
-            ferr = open('err.txt', 'a')
-            ferr.write('i: ' + str(i))
-            ferr.write('\n')
-            ferr.close()
-            check = self.state.closed_check(i)
-            print('check: ' + str(check))
-            ferr = open('err.txt', 'a')
-            ferr.write('check: ' + str(check))
-            ferr.write('\n')
-            ferr.close()
-            if check == 1:
-                terminal = True
-                break
+        checked_nodes = []
+        for i in self.state.getFilled():
+            print('---------------------------------------')
+            print('Current piece in terminal_test: ' + str(i))
+            if [item for item in checked_nodes if item[0] == i]:
+                print('Already checked this node/group. Continue to next')
+                continue
+            if self.state.closed_check(i, checked_nodes):
+                print('\n\nFound terminal state!\nchecked: ' + str(checked_nodes))
+                return True
+            print('\nchecked: ' + str(checked_nodes))
 
-        return terminal
+        return False
+
 
     def utility(s, p):
         #returns payoff of state "s" if terminal or evaluation with respect to player
@@ -238,25 +251,15 @@ class Game():
             print("Error: couldn't open board file")
             sys.exit()
 
-        l = file.readline().split(' ')
+        l = file.readline().rstrip('\n').split(' ')
         player = int(l[1])
         size = int(l[0])
 
-        # Python way of creatig map and filled with 3 lines of code
         # Reads file and creates list of lists of integers with the board
         l = [line.rstrip('\n') for line in file.readlines()]
         mat = [list(map(int, list(i))) for i in l]
         # List of tuples with filled positions of the board
         aux = [(mat[x][y], coord2ind(y, x, size)) for x in range(size) for y in range(size) if mat[x][y] != 0]
-
-        # "C" style way
-#        mat = [[0 for x in range(int(l[0]))] for y in range(int(l[0]))]
-#        for i in range(size):
-#            l = list(file.readline())
-#            for h in range(size):
-#                mat[i][h] = int(l[h])
-#                if int(l[h]) != 0:
-#                    aux.append((int(l[h]), coord2ind(h, i, size)))
 
         self.state = State(mat, player, aux, size)
         return self.state
@@ -319,8 +322,6 @@ def ind2coord(i, s):
 # Main function
 if __name__ == '__main__':
 
-    ferr = open('err.txt', 'w')
-    ferr.close()
     g = Game()
 
     try:
@@ -330,9 +331,4 @@ if __name__ == '__main__':
         sys.exit()
 
     s.printState()
-    test = g.terminal_test(s)
-    print('\n\nTerminal: ' + str(test))
-    ferr = open('err.txt', 'a')
-    ferr.write('\n\nTerminal: ' + str(test))
-    ferr.write('\n')
-    ferr.close()
+    print('\n\nTerminal: ' + str(g.terminal_test(s)))
