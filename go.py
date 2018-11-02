@@ -1,5 +1,8 @@
 import sys
 
+infinity = float('inf')
+
+
 class State():
     """docstring for class State"""
 
@@ -228,9 +231,20 @@ class Game():
         return False
 
 
-    def utility(s, p):
+    def utility(self, s, p):
         #returns payoff of state "s" if terminal or evaluation with respect to player
-        pass
+
+        if self.terminal_test(s):
+            if s.getPlayer() == p:
+                return -1
+            else:
+                return 1
+
+        if not self.actions(s):
+            return 0
+
+
+        return 666
 
     def actions(self, s):
         #returns list of valid moves at state "s"
@@ -346,12 +360,14 @@ if __name__ == '__main__':
         sys.exit()
 
     s.printState()
-    #print('\n\nTerminal: ' + str(g.terminal_test(s)))
+    # print('\n\nTerminal: ' + str(g.terminal_test(s)))
 
-    i = 1
-    while i < 30:
-        actions = g.actions(s)
-        print('\n\nActions: ' + str(actions))
-        g.result(s, actions[int(len(actions)/2)])
-        s.printState()
-        i = i + 1
+    # i = 1
+    # while i < 30:
+    #     actions = g.actions(s)
+    #     print('\n\nActions: ' + str(actions))
+    #     g.result(s, actions[int(len(actions)/2)])
+    #     s.printState()
+    #     i = i + 1
+
+    print('\nutility: ' + str(g.utility(s, 1)))
