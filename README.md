@@ -14,6 +14,6 @@ DONE:
 
   -actions (confirmar)
 
-  -to move (confirmar)
+  -to move
 
   -result (confirmar)

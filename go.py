@@ -182,6 +182,14 @@ class State():
     def setDim(self, d):
         self.dim = d
 
+    def setPos(self, a):
+        print('a: ' + str(a))
+        self.mat[a[1]-1][a[2]-1] = a[0]
+        self.addFilled((a[0], coord2ind(a[2]-1, a[1]-1, self.dim)))
+
+    def addFilled(self, f):
+        self.filled.append(f)
+
     def printState(self):
         print('State::')
         print('Player: ' + str(self.player))
@@ -232,41 +240,22 @@ class Game():
         player = s.getPlayer()
         mat = s.getMat()
 
-        # for i in range(dim):
-        #     for k in range(dim):
-        #         print('i: ' + str(i) + ', k: ' + str(k))
-        #         if mat[i][k] == 0 and not self.state.closed_check((player, coord2ind(k, i, dim))):
-        #             act.append((player, i+1, k+1))
-        # print('\n-------------------------------------------------------------')
-        # print('actions: ' + str(act))
-        # print('-------------------------------------------------------------\n')
+        return [(player, i+1, k+1) for i in range(dim) for k in range(dim) if
+                mat[i][k] == 0 and not self.state.closed_check((player, coord2ind(k, i, dim)), [])]
 
-        act = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if
-            mat[i][k] == 0 and not self.state.closed_check((player, coord2ind(k, i, dim)))]
-        # print('\n-------------------------------------------------------------')
-        # print('actions: ' + str(act))
-        # print('-------------------------------------------------------------\n')
-
-        # fileID = open('log.txt', 'w')
-        # fileID.write('a1: ' + str(act) + '\n')
-        # fileID.write('\na2: ' + str(a) + '\n')
-        # fileID.close()
-
-        return act
-
-    def result(s, a):
+    def result(self, s, a):
         #returns the sucessor game state after playing move "a" at state "s"
+
+        print('a: ' + str(a))
         if a[0] == 1:
             s.setPlayer(2)
         else:
             s.setPlayer(1)
 
-        print('printing player inside result')
-        print(s.player)
+        s.setPos(a)
 
-        s.table[a[1]][a[2]] = a[0]
+        return s
 
-        #TODO make the actual game!!!???
 
     def load_board(self, s):
         #loads board from file stream "s". returns corresponding state
@@ -358,4 +347,11 @@ if __name__ == '__main__':
 
     s.printState()
     #print('\n\nTerminal: ' + str(g.terminal_test(s)))
-    print('\n\nActions: ' + str(g.actions(s)))
+
+    i = 1
+    while i < 30:
+        actions = g.actions(s)
+        print('\n\nActions: ' + str(actions))
+        g.result(s, actions[int(len(actions)/2)])
+        s.printState()
+        i = i + 1
