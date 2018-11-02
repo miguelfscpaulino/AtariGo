@@ -12,6 +12,7 @@ class State():
         self.player = player
         self.filled = filled
         self.dim = dim
+        self.drawflag = False
 
     def closed_check(self, curr, checked=[]):
         """Checks if a position/group adjacent is closed. Returns True if yes"""
@@ -174,6 +175,12 @@ class State():
     def getDim(self):
         return self.dim
 
+    def getDrawFlag(self):
+        return self.drawflag
+
+    def setDrawFlag(self, flag):
+        self.drawflag = flag
+
     def setMat(self, m):
         self.mat = m
 
@@ -218,11 +225,13 @@ class Game():
                 continue
             if s.closed_check(i, checked_nodes):
                 print('\n\nFound terminal state!\nchecked: ' + str(checked_nodes))
+                s.setDrawFlag(False)
                 return True
             print('\nchecked: ' + str(checked_nodes))
 
         if not self.actions(s):
             print('\n\nFound terminal state! DRAW')
+            s.setDrawFlag(True)
             return True
 
         return False
@@ -233,7 +242,7 @@ class Game():
 
         if self.terminal_test(s):
 
-            if not self.actions(s):
+            if s.getDrawFlag():
                 return 0
 
             if s.getPlayer() == p:
@@ -241,10 +250,7 @@ class Game():
             else:
                 return 1
 
-
-
-
-        return 666
+        return 0.2
 
     def actions(self, s):
         #returns list of valid moves at state "s"
@@ -427,12 +433,13 @@ if __name__ == '__main__':
     #
     # print('\nutility: ' + str(g.utility(s, 1)))
 
-    player = s.getPlayer()
-    print('ANTES DO ALFABETA SERACH')
-    move = alphabeta_search(s, g)
-    print('DEPOIS DO ALFABETA SERACH')
-    print('move: ' + str(move))
-    s = g.result(s, move)
-    s.printState()
-    # if g.terminal_test(s):
-    #     print(str(g.utility(s,player)))
+    while True:
+        player = s.getPlayer()
+        move = alphabeta_cutoff_search(s, g)
+        print('move: ' + str(move))
+        s = g.result(s, move)
+        s.printState()
+        if g.terminal_test(s):
+            print('\nGAME ENDED: ' + str(g.utility(s,player)))
+            s.printState()
+            break
