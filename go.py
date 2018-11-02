@@ -13,6 +13,7 @@ class State():
         self.filled = filled
         self.dim = dim
         self.drawflag = False
+        self.terminalflag = False
 
     def closed_check(self, curr, checked=[]):
         """Checks if a position/group adjacent is closed. Returns True if yes"""
@@ -181,6 +182,12 @@ class State():
     def setDrawFlag(self, flag):
         self.drawflag = flag
 
+    def getTerminalFlag(self):
+        return self.terminalflag
+
+    def setTerminalFlag(self, flag):
+        self.terminalflag = flag
+
     def setMat(self, m):
         self.mat = m
 
@@ -225,12 +232,14 @@ class Game():
                 continue
             if s.closed_check(i, checked_nodes):
                 print('\n\nFound terminal state!\nchecked: ' + str(checked_nodes))
+                s.setTerminalFlag(True)
                 s.setDrawFlag(False)
                 return True
             print('\nchecked: ' + str(checked_nodes))
 
         if not self.actions(s):
             print('\n\nFound terminal state! DRAW')
+            s.setTerminalFlag(True)
             s.setDrawFlag(True)
             return True
 
@@ -240,11 +249,15 @@ class Game():
     def utility(self, s, p):
         #returns payoff of state "s" if terminal or evaluation with respect to player
 
-        if self.terminal_test(s):
+        s.printState()
+        if s.getTerminalFlag():
 
+            print('drawflag: ' + str(s.getDrawFlag()))
             if s.getDrawFlag():
                 return 0
 
+            print('player: ' + str(s.getPlayer()))
+            print('p: ' + str(p))
             if s.getPlayer() == p:
                 return -1
             else:
@@ -433,13 +446,15 @@ if __name__ == '__main__':
     #
     # print('\nutility: ' + str(g.utility(s, 1)))
 
+    player = s.getPlayer()
     while True:
-        player = s.getPlayer()
         move = alphabeta_cutoff_search(s, g)
         print('move: ' + str(move))
         s = g.result(s, move)
         s.printState()
         if g.terminal_test(s):
-            print('\nGAME ENDED: ' + str(g.utility(s,player)))
+            utilityresult = g.utility(s, player)
+            print('utilityresult: ' + str(utilityresult))
+            print('\nGAME ENDED: ' + str(utilityresult))
             s.printState()
             break
