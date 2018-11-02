@@ -224,9 +224,35 @@ class Game():
         #returns payoff of state "s" if terminal or evaluation with respect to player
         pass
 
-    def actions(s):
+    def actions(self, s):
         #returns list of valid moves at state "s"
-        pass
+
+        # act = []
+        dim = s.getDim()
+        player = s.getPlayer()
+        mat = s.getMat()
+
+        # for i in range(dim):
+        #     for k in range(dim):
+        #         print('i: ' + str(i) + ', k: ' + str(k))
+        #         if mat[i][k] == 0 and not self.state.closed_check((player, coord2ind(k, i, dim))):
+        #             act.append((player, i+1, k+1))
+        # print('\n-------------------------------------------------------------')
+        # print('actions: ' + str(act))
+        # print('-------------------------------------------------------------\n')
+
+        act = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if
+            mat[i][k] == 0 and not self.state.closed_check((player, coord2ind(k, i, dim)))]
+        # print('\n-------------------------------------------------------------')
+        # print('actions: ' + str(act))
+        # print('-------------------------------------------------------------\n')
+
+        # fileID = open('log.txt', 'w')
+        # fileID.write('a1: ' + str(act) + '\n')
+        # fileID.write('\na2: ' + str(a) + '\n')
+        # fileID.close()
+
+        return act
 
     def result(s, a):
         #returns the sucessor game state after playing move "a" at state "s"
@@ -331,4 +357,5 @@ if __name__ == '__main__':
         sys.exit()
 
     s.printState()
-    print('\n\nTerminal: ' + str(g.terminal_test(s)))
+    #print('\n\nTerminal: ' + str(g.terminal_test(s)))
+    print('\n\nActions: ' + str(g.actions(s)))
