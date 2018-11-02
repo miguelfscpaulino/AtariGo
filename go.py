@@ -185,14 +185,6 @@ class State():
     def setDim(self, d):
         self.dim = d
 
-    def setPos(self, a):
-        print('a: ' + str(a))
-        self.mat[a[1]-1][a[2]-1] = a[0]
-        self.addFilled((a[0], coord2ind(a[2]-1, a[1]-1, self.dim)))
-
-    def addFilled(self, f):
-        self.filled.append(f)
-
     def printState(self):
         print('State::')
         print('Player: ' + str(self.player))
@@ -217,13 +209,13 @@ class Game():
 
         # Checks if each filled position of the board is closed (no liberties)
         checked_nodes = []
-        for i in self.state.getFilled():
+        for i in s.getFilled():
             print('---------------------------------------')
             print('Current piece in terminal_test: ' + str(i))
             if [item for item in checked_nodes if item[0] == i]:
                 print('Already checked this node/group. Continue to next')
                 continue
-            if self.state.closed_check(i, checked_nodes):
+            if s.closed_check(i, checked_nodes):
                 print('\n\nFound terminal state!\nchecked: ' + str(checked_nodes))
                 return True
             print('\nchecked: ' + str(checked_nodes))
@@ -255,20 +247,27 @@ class Game():
         mat = s.getMat()
 
         return [(player, i+1, k+1) for i in range(dim) for k in range(dim) if
-                mat[i][k] == 0 and not self.state.closed_check((player, coord2ind(k, i, dim)), [])]
+                mat[i][k] == 0 and not s.closed_check((player, coord2ind(k, i, dim)), [])]
 
     def result(self, s, a):
         #returns the sucessor game state after playing move "a" at state "s"
 
         print('a: ' + str(a))
         if a[0] == 1:
-            s.setPlayer(2)
+            # s.setPlayer(2)
+            player = 2
         else:
-            s.setPlayer(1)
+            # s.setPlayer(1)
+            player = 2
 
-        s.setPos(a)
+        mat = s.getMat()
+        filled = s.getFilled()
+        dim = s.getDim()
 
-        return s
+        mat[a[1]-1][a[2]-1] = a[0]
+        filled.append((a[0], coord2ind(a[2]-1, a[1]-1, dim)))
+
+        return State(mat, player, filled, dim)
 
 
     def load_board(self, s):
@@ -362,12 +361,12 @@ if __name__ == '__main__':
     s.printState()
     # print('\n\nTerminal: ' + str(g.terminal_test(s)))
 
-    # i = 1
-    # while i < 30:
-    #     actions = g.actions(s)
-    #     print('\n\nActions: ' + str(actions))
-    #     g.result(s, actions[int(len(actions)/2)])
-    #     s.printState()
-    #     i = i + 1
+    i = 1
+    while i < 2:
+        actions = g.actions(s)
+        print('\n\nActions: ' + str(actions))
+        s = g.result(s, actions[int(len(actions)/2)])
+        s.printState()
+        i = i + 1
 
     print('\nutility: ' + str(g.utility(s, 1)))
