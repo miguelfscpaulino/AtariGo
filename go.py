@@ -18,17 +18,11 @@ class State():
     def closed_check(self, curr, checked=[]):
         """Checks if a position/group adjacent is closed. Returns True if yes"""
 
-        print('\nStarting close_check:')
-        print('curr: ' + str(curr))
-        print('checked: ' + str(checked) + '\n')
-
-
         # Checks top position
         if (curr[1] - self.dim) >= 0:
 
             # Checks if top was already checked
             up = [item for item in checked if item[0][1] == (curr[1]-self.dim)]
-            print('up: '+ str(up))
             if up:
                 # Checks if top pos is free
                 if up[0][0][0] == curr[0] and up[0][1] == False:
@@ -37,7 +31,6 @@ class State():
             else:
                 # Checks if top is filled
                 up = [item for item in self.filled if item[1] == (curr[1]-self.dim)]
-                print('up: '+ str(up))
 
                 if not up:     # Top pos is free
                     checked.append([curr, False])
@@ -62,7 +55,6 @@ class State():
 
             # Checks if bottom was already checked
             down = [item for item in checked if item[0][1] == (curr[1]+self.dim)]
-            print('down: '+ str(down))
             if down:
                 # Checks if bottom pos is free
                 if down[0][0][0] == curr[0] and down[0][1] == False:
@@ -71,7 +63,6 @@ class State():
             else:
                 # Checks if bottom is filled
                 down = [item for item in self.filled if item[1] == (curr[1]+self.dim)]
-                print('down: '+ str(down))
 
                 if not down:    # Bottom pos is free
                     checked.append([curr, False])
@@ -96,7 +87,6 @@ class State():
 
             # Checks if left was already checked
             left = [item for item in checked if item[0][1] == (curr[1]-1)]
-            print('left: '+ str(left))
             if left:
                 # Checks if left pos is free
                 if left[0][0][0] == curr[0] and left[0][1] == False:
@@ -105,7 +95,6 @@ class State():
             else:
                 # Checks if left is filled
                 left = [item for item in self.filled if item[1] == (curr[1]-1)]
-                print('left: '+ str(left))
 
                 if not left:    # Left pos is free
                     checked.append([curr, False])
@@ -130,7 +119,6 @@ class State():
 
             # Checks if right was already checked
             right = [item for item in checked if item[0][1] == (curr[1]+1)]
-            print('right: '+ str(right))
             if right:
                 # Checks if right pos is free
                 if right[0][0][0] == curr[0] and right[0][1] == False:
@@ -139,7 +127,6 @@ class State():
             else:
                 # Checks if right is filled
                 right = [item for item in self.filled if item[1] == (curr[1]+1)]
-                print('right: '+ str(right))
 
                 if not right:   # Right pos is free
                     checked.append([curr, False])
@@ -225,20 +212,14 @@ class Game():
         # Checks if each filled position of the board is closed (no liberties)
         checked_nodes = []
         for i in s.getFilled():
-            print('---------------------------------------')
-            print('Current piece in terminal_test: ' + str(i))
             if [item for item in checked_nodes if item[0] == i]:
-                print('Already checked this node/group. Continue to next')
                 continue
             if s.closed_check(i, checked_nodes):
-                print('\n\nFound terminal state!\nchecked: ' + str(checked_nodes))
                 s.setTerminalFlag(True)
                 s.setDrawFlag(False)
                 return True
-            print('\nchecked: ' + str(checked_nodes))
 
         if not self.actions(s):
-            print('\n\nFound terminal state! DRAW')
             s.setTerminalFlag(True)
             s.setDrawFlag(True)
             return True
@@ -249,15 +230,11 @@ class Game():
     def utility(self, s, p):
         #returns payoff of state "s" if terminal or evaluation with respect to player
 
-        s.printState()
         if s.getTerminalFlag():
 
-            print('drawflag: ' + str(s.getDrawFlag()))
             if s.getDrawFlag():
                 return 0
 
-            print('player: ' + str(s.getPlayer()))
-            print('p: ' + str(p))
             if s.getPlayer() == p:
                 return -1
             else:
@@ -276,18 +253,16 @@ class Game():
         return [(player, i+1, k+1) for i in range(dim) for k in range(dim) if
                 mat[i][k] == 0 and not s.closed_check((player, coord2ind(k, i, dim)), [])]
 
+
     def result(self, s, a):
         #returns the sucessor game state after playing move "a" at state "s"
 
-        print('a: ' + str(a))
         if a[0] == 1:
             # s.setPlayer(2)
             player = 2
         else:
             # s.setPlayer(1)
             player = 1
-
-        print('MATORIG antes: ' + str(s.getMat()))
 
         mat = copy.deepcopy(s.getMat())
         filled = copy.deepcopy(s.getFilled())
@@ -296,31 +271,25 @@ class Game():
         mat[a[1]-1][a[2]-1] = a[0]
         filled.append((a[0], coord2ind(a[2]-1, a[1]-1, dim)))
 
-        print('MATORIG depois: ' + str(s.getMat()))
         return State(mat, player, filled, dim)
 
 
     def load_board(self, s):
         #loads board from file stream "s". returns corresponding state
 
-        try:
-            file = open(s, "r")
-        except IOError:
-            print("Error: couldn't open board file")
-            sys.exit()
-
-        l = file.readline().rstrip('\n').split(' ')
+        l = s.readline().rstrip('\n').split(' ')
         player = int(l[1])
         size = int(l[0])
 
         # Reads file and creates list of lists of integers with the board
-        l = [line.rstrip('\n') for line in file.readlines()]
+        l = [line.rstrip('\n') for line in s.readlines()]
         mat = [list(map(int, list(i))) for i in l]
         # List of tuples with filled positions of the board
         aux = [(mat[x][y], coord2ind(y, x, size)) for x in range(size) for y in range(size) if mat[x][y] != 0]
 
         self.state = State(mat, player, aux, size)
         return self.state
+
 
 def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
@@ -369,51 +338,6 @@ def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
             best_action = a
     return best_action
 
-def alphabeta_search(state, game):
-    """Search game to determine best action; use alpha-beta pruning.
-    As in [Figure 5.7], this version searches all the way to the leaves."""
-
-    player = game.to_move(state)
-
-    # Functions used by alphabeta
-    def max_value(state, alpha, beta):
-        if game.terminal_test(state):
-            return game.utility(state, player)
-        v = -infinity
-        for a in game.actions(state):
-            v = max(v, min_value(game.result(state, a), alpha, beta))
-            state.printState()
-            if v >= beta:
-                return v
-            alpha = max(alpha, v)
-        return v
-
-    def min_value(state, alpha, beta):
-        if game.terminal_test(state):
-            return game.utility(state, player)
-        v = infinity
-        for a in game.actions(state):
-            v = min(v, max_value(game.result(state, a), alpha, beta))
-            state.printState()
-            if v <= alpha:
-                return v
-            beta = min(beta, v)
-        return v
-
-    # Body of alphabeta_search:
-    best_score = -infinity
-    beta = infinity
-    best_action = None
-    print('ANTES DO primeiro for do alfabeta SEarch')
-    for a in game.actions(state):
-        print('CHAMA MIN VALUE')
-        v = min_value(game.result(state, a), best_score, beta)
-        state.printState()
-        if v > best_score:
-            best_score = v
-            best_action = a
-    return best_action
-
 # Converts 2-D coordinates of a matrix in a positive integer index
 def coord2ind(x, y, s):
     return x + s*y
@@ -428,11 +352,15 @@ if __name__ == '__main__':
     g = Game()
 
     try:
-        s = g.load_board(sys.argv[1])
+        fileID = open(sys.argv[1], "r")
     except IndexError:
         print('Error: Filename not provided or invalid open/read')
         sys.exit()
+    except IOError:
+        print("Error: couldn't open board file")
+        sys.exit()
 
+    s = g.load_board(fileID)
     s.printState()
     # print('\n\nTerminal: ' + str(g.terminal_test(s)))
 
@@ -449,12 +377,13 @@ if __name__ == '__main__':
     player = s.getPlayer()
     while True:
         move = alphabeta_cutoff_search(s, g)
-        print('move: ' + str(move))
+        print('\nmove: ' + str(move))
         s = g.result(s, move)
         s.printState()
+        print('\n\n')
         if g.terminal_test(s):
             utilityresult = g.utility(s, player)
-            print('utilityresult: ' + str(utilityresult))
+            print('\nutilityresult: ' + str(utilityresult))
             print('\nGAME ENDED: ' + str(utilityresult))
             s.printState()
             break
