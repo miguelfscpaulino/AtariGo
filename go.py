@@ -1,4 +1,5 @@
 import sys
+import copy
 
 infinity = float('inf')
 
@@ -220,6 +221,10 @@ class Game():
                 return True
             print('\nchecked: ' + str(checked_nodes))
 
+        if not self.actions(s):
+            print('\n\nFound terminal state! DRAW')
+            return True
+
         return False
 
 
@@ -227,13 +232,16 @@ class Game():
         #returns payoff of state "s" if terminal or evaluation with respect to player
 
         if self.terminal_test(s):
+
+            if not self.actions(s):
+                return 0
+
             if s.getPlayer() == p:
                 return -1
             else:
                 return 1
 
-        if not self.actions(s):
-            return 0
+
 
 
         return 666
@@ -258,15 +266,18 @@ class Game():
             player = 2
         else:
             # s.setPlayer(1)
-            player = 2
+            player = 1
 
-        mat = s.getMat()
-        filled = s.getFilled()
+        print('MATORIG antes: ' + str(s.getMat()))
+
+        mat = copy.deepcopy(s.getMat())
+        filled = copy.deepcopy(s.getFilled())
         dim = s.getDim()
 
         mat[a[1]-1][a[2]-1] = a[0]
         filled.append((a[0], coord2ind(a[2]-1, a[1]-1, dim)))
 
+        print('MATORIG depois: ' + str(s.getMat()))
         return State(mat, player, filled, dim)
 
 
@@ -339,6 +350,51 @@ def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
             best_action = a
     return best_action
 
+def alphabeta_search(state, game):
+    """Search game to determine best action; use alpha-beta pruning.
+    As in [Figure 5.7], this version searches all the way to the leaves."""
+
+    player = game.to_move(state)
+
+    # Functions used by alphabeta
+    def max_value(state, alpha, beta):
+        if game.terminal_test(state):
+            return game.utility(state, player)
+        v = -infinity
+        for a in game.actions(state):
+            v = max(v, min_value(game.result(state, a), alpha, beta))
+            state.printState()
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+
+    def min_value(state, alpha, beta):
+        if game.terminal_test(state):
+            return game.utility(state, player)
+        v = infinity
+        for a in game.actions(state):
+            v = min(v, max_value(game.result(state, a), alpha, beta))
+            state.printState()
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v
+
+    # Body of alphabeta_search:
+    best_score = -infinity
+    beta = infinity
+    best_action = None
+    print('ANTES DO primeiro for do alfabeta SEarch')
+    for a in game.actions(state):
+        print('CHAMA MIN VALUE')
+        v = min_value(game.result(state, a), best_score, beta)
+        state.printState()
+        if v > best_score:
+            best_score = v
+            best_action = a
+    return best_action
+
 # Converts 2-D coordinates of a matrix in a positive integer index
 def coord2ind(x, y, s):
     return x + s*y
@@ -361,12 +417,22 @@ if __name__ == '__main__':
     s.printState()
     # print('\n\nTerminal: ' + str(g.terminal_test(s)))
 
-    i = 1
-    while i < 2:
-        actions = g.actions(s)
-        print('\n\nActions: ' + str(actions))
-        s = g.result(s, actions[int(len(actions)/2)])
-        s.printState()
-        i = i + 1
+    # i = 1
+    # while i < 2:
+    #     actions = g.actions(s)
+    #     print('\n\nActions: ' + str(actions))
+    #     s = g.result(s, actions[int(len(actions)/2)])
+    #     s.printState()
+    #     i = i + 1
+    #
+    # print('\nutility: ' + str(g.utility(s, 1)))
 
-    print('\nutility: ' + str(g.utility(s, 1)))
+    player = s.getPlayer()
+    print('ANTES DO ALFABETA SERACH')
+    move = alphabeta_search(s, g)
+    print('DEPOIS DO ALFABETA SERACH')
+    print('move: ' + str(move))
+    s = g.result(s, move)
+    s.printState()
+    # if g.terminal_test(s):
+    #     print(str(g.utility(s,player)))
