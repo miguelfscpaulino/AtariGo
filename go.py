@@ -338,6 +338,17 @@ class Game():
         f = open("logfile.txt","a")
         f.write("aux:" + str(aux) + "\n")
         f.close()
+
+#----------------------------------- 
+#	Evaluates the strings/groups of each player by classifying them this way:
+#	1 - 1; 2-2; 3-4; 5-7 ....; size - (last size + last value)
+
+		#matGroup = copy.deepcopy(s.mat)
+
+
+
+
+
         return aux
 
     def actions(self, s):
@@ -444,7 +455,7 @@ class Game():
         return self.state
 
 
-def alphabeta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
+def alphabeta_cutoff_search(state, game, d=2, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
     This version cuts off search and uses an evaluation function."""
 
@@ -523,8 +534,8 @@ if __name__ == '__main__':
     # utilityresult = g.utility(s, 1)
     # print('\nutilityresult: ' + str(utilityresult))
 
-    actions = g.actions(s)
-    print(actions)
+    # actions = g.actions(s)
+    # print(actions)
 
     # s.printState()
     # # print('\n\nTerminal: ' + str(g.terminal_test(s)))
@@ -539,16 +550,16 @@ if __name__ == '__main__':
     # #
     # # print('\nutility: ' + str(g.utility(s, 1)))
 
-    # player = s.getPlayer()
-    # while True:
-    #     move = alphabeta_cutoff_search(s, g)
-    #     #print('\nmove: ' + str(move))
-    #     s = g.result(s, move)
-    #     #s.printState()
-    #     #print('\n\n')
-    #     if g.terminal_test(s):
-    #         utilityresult = g.utility(s, player)
-    #         print('\nutilityresult: ' + str(utilityresult))
-    #         print('\nGAME ENDED: ' + str(utilityresult))
-    #         s.printState()
-    #         break
+    player = s.getPlayer()
+    while True:
+        move = alphabeta_cutoff_search(s, g)
+        #print('\nmove: ' + str(move))
+        s = g.result(s, move)
+        #s.printState()
+        #print('\n\n')
+        if g.terminal_test(s):
+            utilityresult = g.utility(s, player)
+            print('\nutilityresult: ' + str(utilityresult))
+            print('\nGAME ENDED: ' + str(utilityresult))
+            s.printState()
+            break
