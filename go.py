@@ -184,6 +184,12 @@ class State():
     def setFilled(self, f):
         self.filled = f
 
+    def addFilled(self, f):
+        self.filled.append(f)
+
+    def removeFilled(self, f):
+        self.filled.remove(f)
+
     def setDim(self, d):
         self.dim = d
 
@@ -220,9 +226,8 @@ class Game():
                 return True
 
         if not self.actions(s):
-            s.setTerminalFlag(True)
+            s.setTerminalFlag(False)
             s.setDrawFlag(True)
-            return True
 
         return False
 
@@ -230,17 +235,110 @@ class Game():
     def utility(self, s, p):
         #returns payoff of state "s" if terminal or evaluation with respect to player
 
-        if s.getTerminalFlag():
-
-            if s.getDrawFlag():
+        if s.getDrawFlag():
                 return 0
 
+        if s.getTerminalFlag():
             if s.getPlayer() == p:
                 return -1
             else:
                 return 1
 
-        return 0.2
+
+        dim = s.getDim()
+        matP1 = [[0]*dim for i in range(dim)]
+        matP2 = [[0]*dim for i in range(dim)]
+
+       
+
+        for i in s.getFilled():
+
+        	coord = ind2coord(i[1],dim)
+
+        	if i[0] == p:
+        		matP1[coord[0]][coord[1]] += 1;
+        	else:
+        		matP2[coord[0]][coord[1]] -= 1;
+
+        	u=False
+        	d=False
+        	l=False
+        	r=False
+
+        	if (i[1] - dim) >= 0:
+        		u=True
+        		if i[0] == p:
+        			matP1[coord[0]-1][coord[1]] += 1;
+        		else:
+        			matP2[coord[0]-1][coord[1]] -= 1;
+
+        	if (i[1] + dim) < dim*dim:
+        		d=True
+        		if i[0] == p:
+        			matP1[coord[0]+1][coord[1]] += 1;
+        		else:
+        			matP2[coord[0]+1][coord[1]] -= 1;
+
+        	if (i[1]%dim) != 0:
+        		l=True
+        		if i[0] == p:
+        			matP1[coord[0]][coord[1]-1] += 1;
+        		else:
+        			matP2[coord[0]][coord[1]-1] -= 1;
+
+        	if ((i[1]+1)%dim) != 0:
+        		r=True
+        		if i[0] == p:
+        			matP1[coord[0]][coord[1]+1] += 1;
+        		else:
+        			matP2[coord[0]][coord[1]+1] -= 1;
+
+        	if u and r:
+
+        		if i[0] == p:
+        			matP1[coord[0]-1][coord[1]+1] += 1;
+        		else:
+        			matP2[coord[0]-1][coord[1]+1] -= 1;
+
+        	if u and l:
+
+        		if i[0] == p:
+        			matP1[coord[0]-1][coord[1]-1] += 1;
+        		else:
+        			matP2[coord[0]-1][coord[1]-1] -= 1;
+
+        	if d and r:
+
+        		if i[0] == p:
+        			matP1[coord[0]+1][coord[1]+1] += 1;
+        		else:
+        			matP2[coord[0]+1][coord[1]+1] -= 1;
+
+        	if d and l:
+
+        		if i[0] == p:
+        			matP1[coord[0]+1][coord[1]-1] += 1;
+        		else:
+        			matP2[coord[0]+1][coord[1]-1] -= 1;
+
+        sumation = 0;
+
+        for i in matP1:
+
+        	sumation += sum(i)
+
+        for i in matP2:
+
+        	sumation += sum(i)
+
+
+        aux = sumation/(dim*dim)
+        #print("\n--------------------------------")
+        #print("\naux:"+str(aux))
+        f = open("logfile.txt","a")
+        f.write("aux:" + str(aux) + "\n")
+        f.close()
+        return aux
 
     def actions(self, s):
         #returns list of valid moves at state "s"
@@ -248,10 +346,65 @@ class Game():
         # act = []
         dim = s.getDim()
         player = s.getPlayer()
+        if player == 1:
+        	nextplayer = 2
+        else:
+        	nextplayer = 1 
         mat = s.getMat()
+        filled = s.getFilled()
 
-        return [(player, i+1, k+1) for i in range(dim) for k in range(dim) if
-                mat[i][k] == 0 and not s.closed_check((player, coord2ind(k, i, dim)), [])]
+        aux = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if mat[i][k] == 0]
+        b = []
+
+        for i in aux:
+        	if s.closed_check((player, coord2ind(i[2]-1, i[1]-1, dim)), []):
+        		if (i[1]-2) >= 0:
+        			if mat[i[1]-2][i[2]-1] != player:
+        				mat[i[1]-1][i[2]-1] = player
+        				s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        				if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1]-2, dim)), []):
+        					mat[i[1]-1][i[2]-1] = 0
+        					s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        					continue
+        				mat[i[1]-1][i[2]-1] = 0
+        				s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        		if i[1] < dim:
+        			if mat[i[1]][i[2]-1] != player:
+        				mat[i[1]-1][i[2]-1] = player
+        				s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        				if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1], dim)), []):
+        					mat[i[1]-1][i[2]-1] = 0
+        					s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        					continue
+        				mat[i[1]-1][i[2]-1] = 0
+        				s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        		if (i[2]-2) >= 0:
+        			if mat[i[1]-1][i[2]-2] != player:
+        				mat[i[1]-1][i[2]-1] = player
+        				s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        				if s.closed_check((nextplayer, coord2ind(i[2]-2, i[1]-1, dim)), []):
+        					mat[i[1]-1][i[2]-1] = 0
+        					s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        					continue
+        				mat[i[1]-1][i[2]-1] = 0
+        				s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        		if i[2] < dim:
+        			if mat[i[1]-1][i[2]] != player:
+        				mat[i[1]-1][i[2]-1] = player
+        				s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        				if s.closed_check((nextplayer, coord2ind(i[2], i[1]-2, dim)), []):
+        					mat[i[1]-1][i[2]-1] = 0
+        					s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        					continue
+        				mat[i[1]-1][i[2]-1] = 0
+        				s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+
+        		b.append(i)
+
+        for k in b:
+        	aux.remove(k)
+
+        return aux
 
 
     def result(self, s, a):
@@ -350,7 +503,8 @@ def ind2coord(i, s):
 if __name__ == '__main__':
 
     g = Game()
-
+    f = open("logfile.txt","w")
+    f.close()
     try:
         fileID = open(sys.argv[1], "r")
     except IndexError:
@@ -361,29 +515,40 @@ if __name__ == '__main__':
         sys.exit()
 
     s = g.load_board(fileID)
-    s.printState()
+    # s.printState()
+    # move = (2,5,4)
+    # s = g.result(s, move)
+    # s.printState()
     # print('\n\nTerminal: ' + str(g.terminal_test(s)))
+    # utilityresult = g.utility(s, 1)
+    # print('\nutilityresult: ' + str(utilityresult))
 
-    # i = 1
-    # while i < 2:
-    #     actions = g.actions(s)
-    #     print('\n\nActions: ' + str(actions))
-    #     s = g.result(s, actions[int(len(actions)/2)])
-    #     s.printState()
-    #     i = i + 1
-    #
-    # print('\nutility: ' + str(g.utility(s, 1)))
+    actions = g.actions(s)
+    print(actions)
 
-    player = s.getPlayer()
-    while True:
-        move = alphabeta_cutoff_search(s, g)
-        print('\nmove: ' + str(move))
-        s = g.result(s, move)
-        s.printState()
-        print('\n\n')
-        if g.terminal_test(s):
-            utilityresult = g.utility(s, player)
-            print('\nutilityresult: ' + str(utilityresult))
-            print('\nGAME ENDED: ' + str(utilityresult))
-            s.printState()
-            break
+    # s.printState()
+    # # print('\n\nTerminal: ' + str(g.terminal_test(s)))
+
+    # # i = 1
+    # # while i < 2:
+    # #     actions = g.actions(s)
+    # #     print('\n\nActions: ' + str(actions))
+    # #     s = g.result(s, actions[int(len(actions)/2)])
+    # #     s.printState()
+    # #     i = i + 1
+    # #
+    # # print('\nutility: ' + str(g.utility(s, 1)))
+
+    # player = s.getPlayer()
+    # while True:
+    #     move = alphabeta_cutoff_search(s, g)
+    #     #print('\nmove: ' + str(move))
+    #     s = g.result(s, move)
+    #     #s.printState()
+    #     #print('\n\n')
+    #     if g.terminal_test(s):
+    #         utilityresult = g.utility(s, player)
+    #         print('\nutilityresult: ' + str(utilityresult))
+    #         print('\nGAME ENDED: ' + str(utilityresult))
+    #         s.printState()
+    #         break
