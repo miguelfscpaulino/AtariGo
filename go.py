@@ -56,6 +56,7 @@ class State():
                     zeros.append(pos+1)
                     break
 
+        #print('surr_zeros: ' + str(zeros))
         return zeros
 
 
@@ -285,17 +286,6 @@ class Game():
                     s.setDrawFlag(False)
                     return True
 
-
-        # Checks if each filled position of the board is closed (no liberties)
-        checked_nodes = []
-        for i in s.getFilled():
-            if [item for item in checked_nodes if item[0] == i]:
-                continue
-            if s.closed_check(i, checked_nodes):
-                s.setTerminalFlag(True)
-                s.setDrawFlag(False)
-                return True
-
         if not self.actions(s):
             s.setTerminalFlag(False)
             s.setDrawFlag(True)
@@ -332,68 +322,122 @@ class Game():
     def actions(self, s):
         #returns list of valid moves at state "s"
 
-        # act = []
+
+
         dim = s.getDim()
         player = s.getPlayer()
         if player == 1:
-            nextplayer = 2
+        	zerosCont = s.getZeros2()
+        	zerosOwn = s.getZeros1()
         else:
-            nextplayer = 1 
+        	zerosCont = s.getZeros1()
+        	zerosOwn = s.getZeros2()
+
         mat = s.getMat()
         filled = s.getFilled()
+        dim = s.getDim()
 
         aux = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if mat[i][k] == 0]
-        b = []
 
-        for i in aux:
-            if s.closed_check((player, coord2ind(i[2]-1, i[1]-1, dim)), []):
-                if (i[1]-2) >= 0:
-                    if mat[i[1]-2][i[2]-1] != player:
-                        mat[i[1]-1][i[2]-1] = player
-                        s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                        if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1]-2, dim)), []):
-                            mat[i[1]-1][i[2]-1] = 0
-                            s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                            continue
-                        mat[i[1]-1][i[2]-1] = 0
-                        s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                if i[1] < dim:
-                    if mat[i[1]][i[2]-1] != player:
-                        mat[i[1]-1][i[2]-1] = player
-                        s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                        if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1], dim)), []):
-                            mat[i[1]-1][i[2]-1] = 0
-                            s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                            continue
-                        mat[i[1]-1][i[2]-1] = 0
-                        s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                if (i[2]-2) >= 0:
-                    if mat[i[1]-1][i[2]-2] != player:
-                        mat[i[1]-1][i[2]-1] = player
-                        s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                        if s.closed_check((nextplayer, coord2ind(i[2]-2, i[1]-1, dim)), []):
-                            mat[i[1]-1][i[2]-1] = 0
-                            s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                            continue
-                        mat[i[1]-1][i[2]-1] = 0
-                        s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                if i[2] < dim:
-                    if mat[i[1]-1][i[2]] != player:
-                        mat[i[1]-1][i[2]-1] = player
-                        s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                        if s.closed_check((nextplayer, coord2ind(i[2], i[1]-2, dim)), []):
-                            mat[i[1]-1][i[2]-1] = 0
-                            s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                            continue
-                        mat[i[1]-1][i[2]-1] = 0
-                        s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        
+        rmv = []
+        for mov in aux:
+        	#print('mov: ' + str(mov))
+        	continue_flag = False
+        	ind = coord2ind(mov[2]-1, mov[1]-1, dim)
+        	#print('ind: ' + str(ind))
+        	if not s.surronding_zeros(ind, dim, filled):
+        		#print('ENTRA ASVASVASDAYV')
+        		for i in zerosCont:
+        			if len(i) == 1 and i[0] == ind:
+        				continue_flag = True
+        				break
+        		if continue_flag:
+        			continue
 
-                b.append(i)
+        		#print('continue_flag before zerosOwn:' + str(continue_flag))
+        		for i in zerosOwn:
+        			if ind in i:
+        				if len(i) != 1:
+        					continue_flag = True
+        					break
+        		if continue_flag:
+        			continue
+        		else:
+        			rmv.append(mov)
 
-        for k in b:
-            aux.remove(k)
+        #print('rmv: ' + str(rmv))
+        #print('aux: ' + str(aux))
+
+        for k in rmv:
+        	aux.remove(k)
 
         return aux
+
+
+
+        # # act = []
+        # dim = s.getDim()
+        # player = s.getPlayer()
+        # if player == 1:
+        #     nextplayer = 2
+        # else:
+        #     nextplayer = 1 
+        # mat = s.getMat()
+        # filled = s.getFilled()
+
+        # aux = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if mat[i][k] == 0]
+        # b = []
+
+        # for i in aux:
+        #     if s.closed_check((player, coord2ind(i[2]-1, i[1]-1, dim)), []):
+        #         if (i[1]-2) >= 0:
+        #             if mat[i[1]-2][i[2]-1] != player:
+        #                 mat[i[1]-1][i[2]-1] = player
+        #                 s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #                 if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1]-2, dim)), []):
+        #                     mat[i[1]-1][i[2]-1] = 0
+        #                     s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #                     continue
+        #                 mat[i[1]-1][i[2]-1] = 0
+        #                 s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #         if i[1] < dim:
+        #             if mat[i[1]][i[2]-1] != player:
+        #                 mat[i[1]-1][i[2]-1] = player
+        #                 s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #                 if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1], dim)), []):
+        #                     mat[i[1]-1][i[2]-1] = 0
+        #                     s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #                     continue
+        #                 mat[i[1]-1][i[2]-1] = 0
+        #                 s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #         if (i[2]-2) >= 0:
+        #             if mat[i[1]-1][i[2]-2] != player:
+        #                 mat[i[1]-1][i[2]-1] = player
+        #                 s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #                 if s.closed_check((nextplayer, coord2ind(i[2]-2, i[1]-1, dim)), []):
+        #                     mat[i[1]-1][i[2]-1] = 0
+        #                     s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #                     continue
+        #                 mat[i[1]-1][i[2]-1] = 0
+        #                 s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #         if i[2] < dim:
+        #             if mat[i[1]-1][i[2]] != player:
+        #                 mat[i[1]-1][i[2]-1] = player
+        #                 s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #                 if s.closed_check((nextplayer, coord2ind(i[2], i[1]-2, dim)), []):
+        #                     mat[i[1]-1][i[2]-1] = 0
+        #                     s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        #                     continue
+        #                 mat[i[1]-1][i[2]-1] = 0
+        #                 s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+
+        #         b.append(i)
+
+        # for k in b:
+        #     aux.remove(k)
+
+        # return aux
 
 
     def result(self, s, a):
@@ -825,6 +869,10 @@ if __name__ == '__main__':
     s = g.load_board(fileID)
     s.printState()
 
+    actions = g.actions(s)
+    print('actions: ' + str(actions))
+
+
     #print('\n')
 
     #s = g.result(s, (1,2,2))
@@ -867,4 +915,4 @@ if __name__ == '__main__':
     #         print('\nGAME ENDED: ' + str(utilityresult))
     #         s.printState()
     #         break
-    print('move: ' + str(alphabeta_cutoff_search(s, g)))
+    #print('move: ' + str(alphabeta_cutoff_search(s, g)))

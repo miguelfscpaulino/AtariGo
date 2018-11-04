@@ -2,18 +2,8 @@
 
 TO DO:
 
-  -utility
-
-  -game interaction ???
+  -speed the turtle
   
 DONE:
 
-  -load_board
-
-  -terminal_test
-
-  -actions (confirmar)
-
-  -to move
-
-  -result (confirmar)
+  -everything slowly (314s -> ?+234s+61s)
