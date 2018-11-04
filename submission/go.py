@@ -1,5 +1,6 @@
 import sys
 import copy
+import bisect
 
 infinity = float('inf')
 
@@ -336,9 +337,9 @@ class Game():
         dim = s.getDim()
         player = s.getPlayer()
         if player == 1:
-            nextplayer = 2
+        	nextplayer = 2
         else:
-            nextplayer = 1 
+        	nextplayer = 1 
         mat = s.getMat()
         filled = s.getFilled()
 
@@ -346,52 +347,52 @@ class Game():
         b = []
 
         for i in aux:
-            if s.closed_check((player, coord2ind(i[2]-1, i[1]-1, dim)), []):
-                if (i[1]-2) >= 0:
-                    if mat[i[1]-2][i[2]-1] != player:
-                        mat[i[1]-1][i[2]-1] = player
-                        s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                        if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1]-2, dim)), []):
-                            mat[i[1]-1][i[2]-1] = 0
-                            s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                            continue
-                        mat[i[1]-1][i[2]-1] = 0
-                        s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                if i[1] < dim:
-                    if mat[i[1]][i[2]-1] != player:
-                        mat[i[1]-1][i[2]-1] = player
-                        s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                        if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1], dim)), []):
-                            mat[i[1]-1][i[2]-1] = 0
-                            s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                            continue
-                        mat[i[1]-1][i[2]-1] = 0
-                        s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                if (i[2]-2) >= 0:
-                    if mat[i[1]-1][i[2]-2] != player:
-                        mat[i[1]-1][i[2]-1] = player
-                        s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                        if s.closed_check((nextplayer, coord2ind(i[2]-2, i[1]-1, dim)), []):
-                            mat[i[1]-1][i[2]-1] = 0
-                            s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                            continue
-                        mat[i[1]-1][i[2]-1] = 0
-                        s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                if i[2] < dim:
-                    if mat[i[1]-1][i[2]] != player:
-                        mat[i[1]-1][i[2]-1] = player
-                        s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                        if s.closed_check((nextplayer, coord2ind(i[2], i[1]-2, dim)), []):
-                            mat[i[1]-1][i[2]-1] = 0
-                            s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-                            continue
-                        mat[i[1]-1][i[2]-1] = 0
-                        s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        	if s.closed_check((player, coord2ind(i[2]-1, i[1]-1, dim)), []):
+        		if (i[1]-2) >= 0:
+        			if mat[i[1]-2][i[2]-1] != player:
+        				mat[i[1]-1][i[2]-1] = player
+        				s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        				if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1]-2, dim)), []):
+        					mat[i[1]-1][i[2]-1] = 0
+        					s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        					continue
+        				mat[i[1]-1][i[2]-1] = 0
+        				s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        		if i[1] < dim:
+        			if mat[i[1]][i[2]-1] != player:
+        				mat[i[1]-1][i[2]-1] = player
+        				s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        				if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1], dim)), []):
+        					mat[i[1]-1][i[2]-1] = 0
+        					s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        					continue
+        				mat[i[1]-1][i[2]-1] = 0
+        				s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        		if (i[2]-2) >= 0:
+        			if mat[i[1]-1][i[2]-2] != player:
+        				mat[i[1]-1][i[2]-1] = player
+        				s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        				if s.closed_check((nextplayer, coord2ind(i[2]-2, i[1]-1, dim)), []):
+        					mat[i[1]-1][i[2]-1] = 0
+        					s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        					continue
+        				mat[i[1]-1][i[2]-1] = 0
+        				s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        		if i[2] < dim:
+        			if mat[i[1]-1][i[2]] != player:
+        				mat[i[1]-1][i[2]-1] = player
+        				s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        				if s.closed_check((nextplayer, coord2ind(i[2], i[1]-2, dim)), []):
+        					mat[i[1]-1][i[2]-1] = 0
+        					s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
+        					continue
+        				mat[i[1]-1][i[2]-1] = 0
+        				s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
 
-                b.append(i)
+        		b.append(i)
 
         for k in b:
-            aux.remove(k)
+        	aux.remove(k)
 
         return aux
 
@@ -751,54 +752,6 @@ class Game():
         self.state = State(mat, player, aux, dim, groups1, groups2, zeros1, zeros2)
         return self.state
 
-
-def alphabeta_cutoff_search(state, game, d=0, cutoff_test=None, eval_fn=None):
-    """Search game to determine best action; use alpha-beta pruning.
-    This version cuts off search and uses an evaluation function."""
-
-    player = game.to_move(state)
-
-    # Functions used by alphabeta
-    def max_value(state, alpha, beta, depth):
-        if cutoff_test(state, depth):
-            return eval_fn(state)
-        v = -infinity
-        for a in game.actions(state):
-            v = max(v, min_value(game.result(state, a),
-                                 alpha, beta, depth + 1))
-            if v >= beta:
-                return v
-            alpha = max(alpha, v)
-        return v
-
-    def min_value(state, alpha, beta, depth):
-        if cutoff_test(state, depth):
-            return eval_fn(state)
-        v = infinity
-        for a in game.actions(state):
-            v = min(v, max_value(game.result(state, a),
-                                 alpha, beta, depth + 1))
-            if v <= alpha:
-                return v
-            beta = min(beta, v)
-        return v
-
-    # Body of alphabeta_cutoff_search starts here:
-    # The default test cuts off at depth d or at a terminal state
-    cutoff_test = (cutoff_test or
-                   (lambda state, depth: depth > d or
-                    game.terminal_test(state)))
-    eval_fn = eval_fn or (lambda state: game.utility(state, player))
-    best_score = -infinity
-    beta = infinity
-    best_action = None
-    for a in game.actions(state):
-        v = min_value(game.result(state, a), best_score, beta, 1)
-        if v > best_score:
-            best_score = v
-            best_action = a
-    return best_action
-
 # Converts 2-D coordinates of a matrix in a positive integer index
 def coord2ind(x, y, s):
     return x + s*y
@@ -806,65 +759,3 @@ def coord2ind(x, y, s):
 # Converts index of a matrix into 2-D coordinates
 def ind2coord(i, s):
     return (int(i / s), i % s)
-
-# Main function
-if __name__ == '__main__':
-
-    g = Game()
-    f = open("logfile.txt","w")
-    f.close()
-    try:
-        fileID = open(sys.argv[1], "r")
-    except IndexError:
-        print('Error: Filename not provided or invalid open/read')
-        sys.exit()
-    except IOError:
-        print("Error: couldn't open board file")
-        sys.exit()
-
-    s = g.load_board(fileID)
-    s.printState()
-
-    #print('\n')
-
-    #s = g.result(s, (1,2,2))
-    #s.printState()
-    #print('utility: ' + str(g.utility(s,1)))
-    # s.printState()
-    # move = (2,5,4)
-    # s = g.result(s, move)
-    # s.printState()
-    # print('\n\nTerminal: ' + str(g.terminal_test(s)))
-    # utilityresult = g.utility(s, 1)
-    # print('\nutilityresult: ' + str(utilityresult))
-
-    #actions = g.actions(s)
-    #print(actions)
-
-    # s.printState()
-    # # print('\n\nTerminal: ' + str(g.terminal_test(s)))
-
-    # # i = 1
-    # # while i < 2:
-    # #     actions = g.actions(s)
-    # #     print('\n\nActions: ' + str(actions))
-    # #     s = g.result(s, actions[int(len(actions)/2)])
-    # #     s.printState()
-    # #     i = i + 1
-    # #
-    # # print('\nutility: ' + str(g.utility(s, 1)))
-
-    # player = s.getPlayer()
-    # while True:
-    #     move = alphabeta_cutoff_search(s, g)
-    #     #print('\nmove: ' + str(move))
-    #     s = g.result(s, move)
-    #     #s.printState()
-    #     #print('\n\n')
-    #     if g.terminal_test(s):
-    #         utilityresult = g.utility(s, player)
-    #         print('\nutilityresult: ' + str(utilityresult))
-    #         print('\nGAME ENDED: ' + str(utilityresult))
-    #         s.printState()
-    #         break
-    print('move: ' + str(alphabeta_cutoff_search(s, g)))
