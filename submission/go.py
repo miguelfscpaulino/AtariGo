@@ -1,28 +1,29 @@
 import sys
 import copy
 
-
 class State():
     """docstring for class State"""
-
-    def __init__(self, mat, player, filled, dim, groups1, groups2, zeros1, zeros2):
-        self.mat = mat
-        self.player = player
-        self.filled = filled
-        self.dim = dim
-        self.drawflag = False
-        self.terminalflag = False
-        self.groups1 = groups1
-        self.groups2 = groups2
-        self.zeros1 = zeros1
-        self.zeros2 = zeros2
+    # class state has the following atributes
+    def __init__(self, mat, player, filled, dim, groups1, groups2, zeros1, zeros2, terminalflag=False, drawflag= False):
+        self.mat = mat              # game matrix
+        self.player = player        # current player 
+        self.filled = filled        # list of positions occupied in the board in a certain state
+        self.dim = dim              # dimension of the board(9x9 -> dim = 9)
+        self.drawflag = drawflag       # Flag that is 1 if state is a draw, 0 else
+        self.terminalflag = terminalflag   # Flag that is 1 if state is a terminal, 0 else
+        self.groups1 = groups1      # List of lists of player 1 in which is list is a group(string) and has the positions of said group
+        self.groups2 = groups2      # List of lists of player 2 in which is list is a group(string) and has the positions of said group
+        self.zeros1 = zeros1        # List of lists of player 1 in which is list is the liberties of a group in groups1 list and has the positions of said liberties
+        self.zeros2 = zeros2        # List of lists of player 2 in which is list is the liberties of a group in groups2 list and has the positions of said liberties
 
 
     def surronding_zeros(self, pos, dim, filled):
+    	#Function that checks if a certain position has zeros(liberties) around itself and returns a list with thoose positions.
+    	#If there aren't any zeros, returns an empty list.
 
         zeros = []
 
-        if (pos - dim) >= 0:
+        if (pos - dim) >= 0: #Checks if the position above exists and is a zero
             for item in filled:
                 if item[1] == (pos-dim):
                     break
@@ -30,7 +31,7 @@ class State():
                     zeros.append(pos-dim)
                     break
 
-        if (pos + dim) < dim*dim:
+        if (pos + dim) < dim*dim: #Checks if the position bellow exists and is a zero
             for item in filled:
                 if item[1] == (pos+dim):
                     break
@@ -38,7 +39,7 @@ class State():
                     zeros.append(pos+dim)
                     break
 
-        if (pos % dim) != 0:
+        if (pos % dim) != 0: #Checks if the position to the left exists and is a zero
             for item in filled:
                 if item[1] == pos-1:
                     break
@@ -46,7 +47,7 @@ class State():
                     zeros.append(pos-1)
                     break
 
-        if ((pos+1) % dim) != 0:
+        if ((pos+1) % dim) != 0: #Checks if the position to the right exists and is a zero
             for item in filled:
                 if item[1] == (pos+1):
                     break
@@ -57,142 +58,8 @@ class State():
         return zeros
 
 
-    def closed_check(self, curr, checked=[]):
-        """Checks if a position/group adjacent is closed. Returns True if yes"""
-
-        # Checks top position
-        if (curr[1] - self.dim) >= 0:
-
-            # Checks if top was already checked
-            up = [item for item in checked if item[0][1] == (curr[1]-self.dim)]
-            if up:
-                # Checks if top pos is free
-                if up[0][0][0] == curr[0] and up[0][1] == False:
-                    checked.append([curr, False])
-                    return False
-            else:
-                # Checks if top is filled
-                up = [item for item in self.filled if item[1] == (curr[1]-self.dim)]
-
-                if not up:     # Top pos is free
-                    checked.append([curr, False])
-                    return False
-                else:           # Top is filled
-
-                    # Checks if top position is filled with an equal piece
-                    if up[0][0] == curr[0]:
-                        i = [curr, True]
-                        if i not in checked:
-                            checked.append(i)
-                        # Checks if group on top of current is closed
-                        if not self.closed_check(up[0], checked):
-                            while i in checked:
-                                checked.remove(i)
-                            checked.append([curr, False])
-                            return False
-
-
-        # Checks bottom position
-        if (curr[1] + self.dim) < self.dim*self.dim:
-
-            # Checks if bottom was already checked
-            down = [item for item in checked if item[0][1] == (curr[1]+self.dim)]
-            if down:
-                # Checks if bottom pos is free
-                if down[0][0][0] == curr[0] and down[0][1] == False:
-                    checked.append([curr, False])
-                    return False
-            else:
-                # Checks if bottom is filled
-                down = [item for item in self.filled if item[1] == (curr[1]+self.dim)]
-
-                if not down:    # Bottom pos is free
-                    checked.append([curr, False])
-                    return False
-                else:           # Bottom pos is filled
-
-                    # Checks if bottom position is filled with an equal piece
-                    if down[0][0] == curr[0]:
-                        i = [curr, True]
-                        if i not in checked:
-                            checked.append(i)
-                        # Checks if group on bottom of current is closed
-                        if not self.closed_check(down[0], checked):
-                            while i in checked:
-                                checked.remove(i)
-                            checked.append([curr, False])
-                            return False
-
-
-        # Checks left position
-        if (curr[1] % self.dim) != 0:
-
-            # Checks if left was already checked
-            left = [item for item in checked if item[0][1] == (curr[1]-1)]
-            if left:
-                # Checks if left pos is free
-                if left[0][0][0] == curr[0] and left[0][1] == False:
-                    checked.append([curr, False])
-                    return False
-            else:
-                # Checks if left is filled
-                left = [item for item in self.filled if item[1] == (curr[1]-1)]
-
-                if not left:    # Left pos is free
-                    checked.append([curr, False])
-                    return False
-                else:           # Left pos is filled
-
-                    # Checks if left position is filled with an equal piece
-                    if left[0][0] == curr[0]:
-                        i = [curr, True]
-                        if i not in checked:
-                            checked.append(i)
-                        # Checks if group on left of current is closed
-                        if not self.closed_check(left[0], checked):
-                            while i in checked:
-                                checked.remove(i)
-                            checked.append([curr, False])
-                            return False
-
-
-        # Checks right position
-        if ((curr[1]+1) % self.dim) != 0:
-
-            # Checks if right was already checked
-            right = [item for item in checked if item[0][1] == (curr[1]+1)]
-            if right:
-                # Checks if right pos is free
-                if right[0][0][0] == curr[0] and right[0][1] == False:
-                    checked.append([curr, False])
-                    return False
-            else:
-                # Checks if right is filled
-                right = [item for item in self.filled if item[1] == (curr[1]+1)]
-
-                if not right:   # Right pos is free
-                    checked.append([curr, False])
-                    return False
-                else:           # Right pos is filled
-
-                    # Checks if right position is filled with an equal piece
-                    if right[0][0] == curr[0]:
-                        i = [curr, True]
-                        if i not in checked:
-                            checked.append(i)
-                        # Checks if group on right of current is closed
-                        if not self.closed_check(right[0], checked):
-                            while i in checked:
-                                checked.remove(i)
-                            checked.append([curr, False])
-                            return False
-
-        if [curr, True] not in checked:
-            checked.append([curr, True])
-
-        return True
-
-
+    
+        # Group of self explanatory functions(getters and setters)
     def getMat(self):
         return self.mat
 
@@ -247,24 +114,12 @@ class State():
     def setDim(self, d):
         self.dim = d
 
-    def printState(self):
-        print('State::')
-        print('Player: ' + str(self.player))
-        print('Board: ')
-        print(self.mat)
-        print('Occupied positions: ')
-        print(self.filled)
-        print('Groups1: ' + str(self.groups1))
-        print('Zeros1: ' + str(self.zeros1))
-        print('Groups2: ' + str(self.groups2))
-        print('Zeros2: ' + str(self.zeros2))
-
 
 class Game():
     """docstring for class Game"""
 
-    def getState(self):
-        return self.state
+    def getState(self): #Returns the current state
+        return self.state 
 
     def to_move(self, s):
         #returns the player to move next, given the state "s"
@@ -276,14 +131,14 @@ class Game():
         zeros1 = s.getZeros1()
         zeros2 = s.getZeros2()
 
-        for zeros in [zeros1, zeros2]:
+        for zeros in [zeros1, zeros2]: #If a certain group has no liberties, the state is terminal.
             for i in zeros:
                 if len(i) == 0:
                     s.setTerminalFlag(True)
                     s.setDrawFlag(False)
                     return True
 
-        if not self.actions(s):
+        if not self.actions(s): #Sets draw flag if it is a draw
             s.setTerminalFlag(False)
             s.setDrawFlag(True)
 
@@ -293,16 +148,16 @@ class Game():
     def utility(self, s, p):
         #returns payoff of state "s" if terminal or evaluation with respect to player
 
-        if s.getDrawFlag():
+        if s.getDrawFlag(): #If it's a draw, the utility is 0.
                 return 0
 
-        if s.getTerminalFlag():
+        if s.getTerminalFlag(): # If the state is terminal , returns + or - 1 depending if the original player given by the original state won or not, respecitvely.
             if s.getPlayer() == p:
                 return -1
             else:
                 return 1
 
-        if p ==1:
+        if p ==1:               # Else, it's considered that the state that reduces the largest number of liberties of an opposing group is the better one.
             zeros= s.getZeros2()
         else:
             zeros= s.getZeros1()
@@ -314,14 +169,15 @@ class Game():
 
         dim = s.getDim()
 
-        return 1 - min(liberties)/(dim*dim);
+        return 1 - min(liberties)/(dim*dim); 
+
 
     def actions(self, s):
         #returns list of valid moves at state "s"
 
-        dim = s.getDim()
+        dim = s.getDim() 
         player = s.getPlayer()
-        if player == 1:
+        if player == 1:                 #Choses what lists to evaluate depending on whose turn it is.
         	zerosCont = s.getZeros2()
         	zerosOwn = s.getZeros1()
         else:
@@ -332,13 +188,12 @@ class Game():
         filled = s.getFilled()
         dim = s.getDim()
 
-        aux = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if mat[i][k] == 0]
-
+        aux = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if mat[i][k] == 0] #initialy all zeros are possible moves in the board
 
         rmv = []
-        for mov in aux:
-        	continue_flag = False
-        	ind = coord2ind(mov[2]-1, mov[1]-1, dim)
+        for mov in aux:                                     # Cicle to remove suicidal moves, which envolves verifying if the move is a suicide to the 
+        	continue_flag = False                           # specific piece, to the group it's going to belong to if played or if it's not a suicide because it captures
+        	ind = coord2ind(mov[2]-1, mov[1]-1, dim)        # an oponent group.
         	if not s.surronding_zeros(ind, dim, filled):
         		for i in zerosCont:
         			if len(i) == 1 and i[0] == ind:
@@ -366,53 +221,49 @@ class Game():
     def result(self, s, a):
         #returns the sucessor game state after playing move "a" at state "s"
 
-        if a[0] == 1:
-            groups = copy.deepcopy(s.getGroups1())
-            zeros = copy.deepcopy(s.getZeros1())
-            zerosCont = copy.deepcopy(s.getZeros2())
+        if a[0] == 1:                                   #if player is player 1..
+            groups = copy.deepcopy(s.getGroups1())      #..player groups is groups2,..
+            zeros = copy.deepcopy(s.getZeros1())        #..list of surounding zeros is palyer's 1 zeros
+            zerosCont = copy.deepcopy(s.getZeros2())    #..and list of contrarie surounding zeros is palyer's 2 zeros
             player = 2
-        else:
-            groups = copy.deepcopy(s.getGroups2())
+        else:                                           #same but for player 2
+            groups = copy.deepcopy(s.getGroups2())      
             zeros = copy.deepcopy(s.getZeros2())
             zerosCont = copy.deepcopy(s.getZeros1())
             player = 1
 
-        #mat = copy.deepcopy(s.getMat())
         mat = s.getMat()
-        #filled = copy.deepcopy(s.getFilled())
         filled = s.getFilled()
         dim = s.getDim()
 
 
-        ind = coord2ind(a[2]-1, a[1]-1, dim)
+        ind = coord2ind(a[2]-1, a[1]-1, dim)    #gets index of the new piece 
 
-        #mat[a[1]-1][a[2]-1] = a[0]
-        mat = mat[:(a[1]-1)] + [mat[a[1]-1][:(a[2]-1)] + [a[0]] + mat[a[1]-1][a[2]:]] + mat[a[1]:]
+        mat = mat[:(a[1]-1)] + [mat[a[1]-1][:(a[2]-1)] + [a[0]] + mat[a[1]-1][a[2]:]] + mat[a[1]:]  #remakes the board with the new piece
 
-        #filled.append((a[0], ind))
-        filled = filled + [(a[0], ind)]
-        filled.sort(key=lambda x:x[1])
+        filled = filled + [(a[0], ind)]     #adds the piece's index to the "filled" list
+        filled.sort(key=lambda x:x[1])      #sort "filled" list by the indexes
 
-        UpGroup=[]
-        DownGroup=[]
-        LeftGroup=[]
-        RightGroup=[]
-        joinedUp=False
-        joinedDown=False
-        joinedLeft=False
-        joinedRight = False
+        UpGroup=[]                      #group to which the top piece (of the piece that was played) is associated
+        DownGroup=[]                    #  "    "   "    "  down piece is associated
+        LeftGroup=[]                    #  "    "   "    "  left piece is associated
+        RightGroup=[]                   #  "    "   "    "  right piece is associated
+        joinedUp=False                  # flag if a connection to the upper piece was made
+        joinedDown=False                #  "    " "      "     "   "  down piece was made
+        joinedLeft=False                #  "    " "      "     "   "  left piece was made
+        joinedRight = False             #  "    " "      "     "   "  right piece was made
 
 
-        if (ind - dim) >= 0 and mat[a[1]-2][a[2]-1] == a[0]:
-            for k in groups:
-                if (ind - dim) in k:
-                    k.append(ind)
+        if (ind - dim) >= 0 and mat[a[1]-2][a[2]-1] == a[0]:        #if the position above the new piece exists and has a piece of the same colour..
+            for k in groups:                                        #..finds the group of that piece..
+                if (ind - dim) in k:                            
+                    k.append(ind)                                   #..connects the new piece with that group.
                     joinedUp=True
                     break
 
 
-        if (ind + dim) < dim*dim and mat[a[1]][a[2]-1] == a[0]:
-            if joinedUp:
+        if (ind + dim) < dim*dim and mat[a[1]][a[2]-1] == a[0]:     #if the position bellow the new piece exists and has a piece of the same colour..
+            if joinedUp:                                            #..if a connection with the above piece was made..
 
                 cntup_flag = True
                 cntup = 0
@@ -420,35 +271,35 @@ class Game():
                 cntdown = 0
                 DownGroup = []
                 UpGroup = []
-                for k in groups:
+                for k in groups:                                    #..search the group list.. 
                     if ind in k:
                         cntup_flag = False
-                        UpGroup=k
+                        UpGroup=k                                   #..finds the above piece's group..
                     if (ind+dim) in k:
                         cntdown_flag = False
-                        DownGroup=k
+                        DownGroup=k                                 #..finds the bellow piece's group..
                     if UpGroup and DownGroup:
                         break
                     if cntup_flag:
                         cntup += 1
                     if cntdown_flag:
                         cntdown += 1
-                if UpGroup is not DownGroup:
+                if UpGroup is not DownGroup:                        #..and if the groups are not the same..
                     for k in DownGroup:
-                        UpGroup.append(k)
+                        UpGroup.append(k)                           #..connects the pieces of the bellow piece's group to the group of the above piece.
                     groups.remove(DownGroup)
                     for k in zeros[cntdown]:
-                        zeros[cntup].append(k)
-                    zeros.remove(zeros[cntdown])
-            else:
-                for k in groups:
+                        zeros[cntup].append(k)                      #adds the bellow group's liberties to the above group's
+                    zeros.remove(zeros[cntdown])                    #removes the liberties list of the down group
+            else:                                                   #if a connection was not made with the above ..
+                for k in groups:                                    #..search the group list..
                     if (ind+dim) in k:
-                        k.append(ind)
+                        k.append(ind)                               #..and connects to the bellow piece's group
                         joinedDown = True
                         break
 
-        if (ind%dim) != 0 and mat[a[1]-1][a[2]-2] == a[0]:
-            if joinedUp:
+        if (ind%dim) != 0 and mat[a[1]-1][a[2]-2] == a[0]:          #if the position to the left of the new piece exists and has a piece of the same colour..
+            if joinedUp:                                            #..if a connection with the above piece was made..
 
                 cntup_flag = True
                 cntup = 0
@@ -456,27 +307,27 @@ class Game():
                 cntleft = 0
                 LeftGroup = []
                 UpGroup = []
-                for k in groups:
+                for k in groups:                                    #..search the group list.. 
                     if ind in k:
                         cntup_flag = False
-                        UpGroup=k
+                        UpGroup=k                                   #..finds the above piece's group..
                     if (ind-1) in k:
                         cntleft_flag = False
-                        LeftGroup=k
+                        LeftGroup=k                                 #..finds the left piece's group..
                     if UpGroup and LeftGroup:
                         break
                     if cntup_flag:
                         cntup += 1
                     if cntleft_flag:
                         cntleft += 1
-                if UpGroup is not LeftGroup:
+                if UpGroup is not LeftGroup:                        #..and if the groups are not the same..
                     for k in LeftGroup:
-                        UpGroup.append(k)
+                        UpGroup.append(k)                           #..connects the pieces of the left piece's group to the group of the above piece.
                     groups.remove(LeftGroup)
                     for k in zeros[cntleft]:
-                        zeros[cntup].append(k)
-                    zeros.remove(zeros[cntleft])
-            elif joinedDown:
+                        zeros[cntup].append(k)                      #adds the left group's liberties to the above group's
+                    zeros.remove(zeros[cntleft])                    #removes the liberties list of the left group
+            elif joinedDown:                                        #..if a connection with the above piece was not made but instead made with the bellow piece..
 
                 cntdown_flag = True
                 cntdown = 0
@@ -484,35 +335,36 @@ class Game():
                 cntleft = 0
                 DownGroup = []
                 LeftGroup = []
-                for k in groups:
+                for k in groups:                                    #..search the group list.. 
                     if ind in k:
                         cntdown_flag = False
-                        DownGroup=k
+                        DownGroup=k                                 #..finds the bellow piece's group..
                     if (ind-1) in k:
                         cntleft_flag = False
-                        LeftGroup=k
+                        LeftGroup=k                                 #..finds the left piece's group..
                     if DownGroup and LeftGroup:
                         break
                     if cntdown_flag:
                         cntdown += 1
                     if cntleft_flag:
                         cntleft += 1
-                if DownGroup is not LeftGroup:
+                if DownGroup is not LeftGroup:                      #..and if the groups are not the same..
                     for k in LeftGroup:
-                        DownGroup.append(k)
+                        DownGroup.append(k)                         #..connects the pieces of the left piece's group to the group of the bellow piece.
                     groups.remove(LeftGroup)
                     for k in zeros[cntleft]:
-                        zeros[cntdown].append(k)
-                    zeros.remove(zeros[cntleft])
-            else:
-                for k in groups:
+                        zeros[cntdown].append(k)                    #adds the left group's liberties to the bellow group's
+                    zeros.remove(zeros[cntleft])                    #removes the liberties list of the left group
+            else:                                                   #if a connection was not made with the above and bellow pieces..
+                for k in groups:                                    #..search the group list..
                     if (ind-1) in k:
-                        k.append(ind)
+                        k.append(ind)                               #..and connects to the right piece's group
                         joinedLeft = True
                         break
 
-        if (ind+1)%dim != 0 and mat[a[1]-1][a[2]] == a[0]:
-            if joinedUp:
+        if (ind+1)%dim != 0 and mat[a[1]-1][a[2]] == a[0]:          #if the position on the right of the new piece exists and has a piece of the same colour..
+            if joinedUp:                                            #..if a connection with the above piece was made..
+
 
                 cntup_flag = True
                 cntup = 0
@@ -520,27 +372,27 @@ class Game():
                 cntright = 0
                 UpGroup = []
                 RightGroup = []
-                for k in groups:
+                for k in groups:                                    #..search the group list.. 
                     if ind in k:
                         cntup_flag = False
-                        UpGroup=k
+                        UpGroup=k                                   #..finds the above piece's group..
                     if (ind+1) in k:
                         cntright_flag = False
-                        RightGroup=k
+                        RightGroup=k                                #..finds the right piece's group..
                     if UpGroup and RightGroup:
                         break
                     if cntup_flag:
                         cntup += 1
                     if cntright_flag:
                         cntright += 1
-                if UpGroup is not RightGroup:
-                    for k in RightGroup:
-                        UpGroup.append(k)
+                if UpGroup is not RightGroup:                       #..and if the groups are not the same..
+                    for k in RightGroup:   
+                        UpGroup.append(k)                           ##..connects the pieces of the right piece's group to the group of the above piece.
                     groups.remove(RightGroup)
                     for k in zeros[cntright]:
-                        zeros[cntup].append(k)
-                    zeros.remove(zeros[cntright])
-            elif joinedDown:
+                        zeros[cntup].append(k)                      #adds the right group's liberties to the above group's
+                    zeros.remove(zeros[cntright])                   #removes the liberties list of the right group
+            elif joinedDown:                                        #..if a connection with the above piece was not made but instead made with the bellow piece..
 
                 cntdown_flag = True
                 cntdown = 0
@@ -548,27 +400,27 @@ class Game():
                 cntright = 0
                 DownGroup = []
                 RightGroup = []
-                for k in groups:
+                for k in groups:                                    #..search the group list.. 
                     if ind in k:
                         cntdown_flag = False
-                        DownGroup=k
+                        DownGroup=k                                 #..finds the bellow piece's group..
                     if (ind+1) in k:
                         cntright_flag = False
-                        RightGroup=k
+                        RightGroup=k                                #..finds the right piece's group..
                     if DownGroup and RightGroup:
                         break
                     if cntdown_flag:
                         cntdown += 1
                     if cntright_flag:
                         cntright += 1
-                if DownGroup is not RightGroup:
+                if DownGroup is not RightGroup:                     #..and if the groups are not the same..
                     for k in RightGroup:
-                        DownGroup.append(k)
+                        DownGroup.append(k)                         #..connects the pieces of the right piece's group to the group of the bellow piece.
                     groups.remove(RightGroup)
                     for k in zeros[cntright]:
-                        zeros[cntdown].append(k)
-                    zeros.remove(zeros[cntright])
-            elif joinedLeft:
+                        zeros[cntdown].append(k)                    #adds the right group's liberties to the bellow group's
+                    zeros.remove(zeros[cntright])                   #removes the liberties list of the right group
+            elif joinedLeft:                                        #..if a connection was not made with the above and bellow pieces but was made with the left piece..
 
                 cntleft_flag = True
                 cntleft = 0
@@ -576,53 +428,48 @@ class Game():
                 cntright = 0
                 LeftGroup = []
                 RightGroup = []
-                for k in groups:
+                for k in groups:                                    #..search the group list.. 
                     if ind in k:
                         cntleft_flag = False
-                        LeftGroup=k
+                        LeftGroup=k                                 #..finds the left piece's group..
                     if (ind+1) in k:
                         cntright_flag = False
-                        RightGroup=k
-                    if LeftGroup and RightGroup:
+                        RightGroup=k                                #..finds the right piece's group..
+                    if LeftGroup and RightGroup:                    
                         break
                     if cntleft_flag:
                         cntleft += 1
                     if cntright_flag:
                         cntright += 1
-                if LeftGroup is not RightGroup:
+                if LeftGroup is not RightGroup:                     #..and if the groups are not the same..
                     for k in RightGroup:
-                        LeftGroup.append(k)
+                        LeftGroup.append(k)                         #..connects the pieces of the right piece's group to the group of the left piece..
                     groups.remove(RightGroup)
                     for k in zeros[cntright]:
-                        zeros[cntleft].append(k)
-                    zeros.remove(zeros[cntright])
-            else:
-                for k in groups:
+                        zeros[cntleft].append(k)                    #adds the right group's liberties to the left group's
+                    zeros.remove(zeros[cntright])                   #removes the liberties list of the right group
+            else:                                                   #if a connection was nor made with any other pieces..
+                for k in groups:                                    #..search the group list..
                     if (ind+1) in k:
-                        k.append(ind)
+                        k.append(ind)                               #.. and connects with the right piece's group
                         joinedRight = True
                         break
 
-        if not joinedUp and not joinedDown and not joinedLeft and not joinedRight:
-            groups.append([ind])
-            zeros.append(s.surronding_zeros(ind, dim, filled))
+        if not joinedUp and not joinedDown and not joinedLeft and not joinedRight:      #if the new piece has not been connected with any other piece..
+            groups.append([ind])                                                        #.. creates a new group with the new piece..
+            zeros.append(s.surronding_zeros(ind, dim, filled))                          #..and creates a new list of surrounding zeros associated with that group
 
         for i in range(len(zeros)):
             if ind in zeros[i]:
                 for k in s.surronding_zeros(ind, dim, filled):
-                    zeros[i].append(k)
+                    zeros[i].append(k)                              #adds the surrouding zeros of the new piece to the group of liberties where the new piece has benn added 
             zeros[i] = list(set(zeros[i]))
             if ind in zeros[i]:
-                zeros[i].remove(ind)
+                zeros[i].remove(ind)                                #removes the new piece board's index from all the liberties lists where "ind" was a liberty of the player's groups 
 
-        for i in range(len(zerosCont)):
+        for i in range(len(zerosCont)):                             ##removes the new piece board's index from all the liberties lists where "ind" was a liberty of the next player's groups 
             if ind in zerosCont[i]:
                 zerosCont[i].remove(ind)
-
-        #for zeros in [zeros1, zeros2]:
-        #    for i in zeros:
-        #        while ind in i:
-        #            i.remove(ind)
 
         if a[0] == 1:
             groups1 = groups
@@ -656,7 +503,7 @@ class Game():
         groups2=[]
         zeros2=[]
 
-        for i in aux:
+        for i in aux: # Fills the two lists of existing groups and corresponding liberties
 
             if i[0] == 1:
                 groups = groups1
@@ -666,14 +513,14 @@ class Game():
             joined=False
             coord = ind2coord(i[1],dim)
 
-            if (i[1] - dim) >= 0 and mat[coord[0]-1][coord[1]] == i[0]:
+            if (i[1] - dim) >= 0 and mat[coord[0]-1][coord[1]] == i[0]: #Connects to any same color piece above it, if it exists.
                 for k in groups:
                     if (i[1] - dim) in k:
                         k.append(i[1])
                         joined=True
                         break
 
-            if (i[1]%dim) != 0 and mat[coord[0]][coord[1]-1] == i[0]:
+            if (i[1]%dim) != 0 and mat[coord[0]][coord[1]-1] == i[0]: #Connects to any same color piece to the left, if it exists.
                 if joined:
                     UpGroup=[]
                     LeftGroup=[]
@@ -700,7 +547,7 @@ class Game():
 
 
 
-        for (groups, zeros) in [(groups1, zeros1),(groups2, zeros2)]:
+        for (groups, zeros) in [(groups1, zeros1),(groups2, zeros2)]: #Defning the liberties of each group by verifying the zeros next to it.
 
             cnt=0
             for k in groups:
@@ -720,7 +567,11 @@ class Game():
                         zeros[cnt].append(i+1)
                 cnt += 1
 
-        self.state = State(mat, player, aux, dim, groups1, groups2, zeros1, zeros2)
+        auxState= State(mat, player, aux, dim, groups1, groups2, zeros1, zeros2)
+        self.terminal_test(auxState)
+
+
+        self.state = State(mat, player, aux, dim, groups1, groups2, zeros1, zeros2, auxState.getTerminalFlag(), auxState.getDrawFlag())
         return self.state
 
 
@@ -731,3 +582,4 @@ def coord2ind(x, y, s):
 # Converts index of a matrix into 2-D coordinates
 def ind2coord(i, s):
     return (int(i / s), i % s)
+
