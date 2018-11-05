@@ -2,8 +2,8 @@
 
 TO DO:
 
-  -speed the turtle
+  -otimize
   
 DONE:
 
-  -everything slowly (314s -> ?+234s+61s)
+  -everything: submission (131s + 33s)

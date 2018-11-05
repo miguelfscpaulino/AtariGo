@@ -1,8 +1,6 @@
 import sys
 import copy
 
-infinity = float('inf')
-
 
 class State():
     """docstring for class State"""
@@ -18,7 +16,7 @@ class State():
         self.groups2 = groups2
         self.zeros1 = zeros1
         self.zeros2 = zeros2
-        
+
 
     def surronding_zeros(self, pos, dim, filled):
 
@@ -57,6 +55,142 @@ class State():
                     break
 
         return zeros
+
+
+    def closed_check(self, curr, checked=[]):
+        """Checks if a position/group adjacent is closed. Returns True if yes"""
+
+        # Checks top position
+        if (curr[1] - self.dim) >= 0:
+
+            # Checks if top was already checked
+            up = [item for item in checked if item[0][1] == (curr[1]-self.dim)]
+            if up:
+                # Checks if top pos is free
+                if up[0][0][0] == curr[0] and up[0][1] == False:
+                    checked.append([curr, False])
+                    return False
+            else:
+                # Checks if top is filled
+                up = [item for item in self.filled if item[1] == (curr[1]-self.dim)]
+
+                if not up:     # Top pos is free
+                    checked.append([curr, False])
+                    return False
+                else:           # Top is filled
+
+                    # Checks if top position is filled with an equal piece
+                    if up[0][0] == curr[0]:
+                        i = [curr, True]
+                        if i not in checked:
+                            checked.append(i)
+                        # Checks if group on top of current is closed
+                        if not self.closed_check(up[0], checked):
+                            while i in checked:
+                                checked.remove(i)
+                            checked.append([curr, False])
+                            return False
+
+
+        # Checks bottom position
+        if (curr[1] + self.dim) < self.dim*self.dim:
+
+            # Checks if bottom was already checked
+            down = [item for item in checked if item[0][1] == (curr[1]+self.dim)]
+            if down:
+                # Checks if bottom pos is free
+                if down[0][0][0] == curr[0] and down[0][1] == False:
+                    checked.append([curr, False])
+                    return False
+            else:
+                # Checks if bottom is filled
+                down = [item for item in self.filled if item[1] == (curr[1]+self.dim)]
+
+                if not down:    # Bottom pos is free
+                    checked.append([curr, False])
+                    return False
+                else:           # Bottom pos is filled
+
+                    # Checks if bottom position is filled with an equal piece
+                    if down[0][0] == curr[0]:
+                        i = [curr, True]
+                        if i not in checked:
+                            checked.append(i)
+                        # Checks if group on bottom of current is closed
+                        if not self.closed_check(down[0], checked):
+                            while i in checked:
+                                checked.remove(i)
+                            checked.append([curr, False])
+                            return False
+
+
+        # Checks left position
+        if (curr[1] % self.dim) != 0:
+
+            # Checks if left was already checked
+            left = [item for item in checked if item[0][1] == (curr[1]-1)]
+            if left:
+                # Checks if left pos is free
+                if left[0][0][0] == curr[0] and left[0][1] == False:
+                    checked.append([curr, False])
+                    return False
+            else:
+                # Checks if left is filled
+                left = [item for item in self.filled if item[1] == (curr[1]-1)]
+
+                if not left:    # Left pos is free
+                    checked.append([curr, False])
+                    return False
+                else:           # Left pos is filled
+
+                    # Checks if left position is filled with an equal piece
+                    if left[0][0] == curr[0]:
+                        i = [curr, True]
+                        if i not in checked:
+                            checked.append(i)
+                        # Checks if group on left of current is closed
+                        if not self.closed_check(left[0], checked):
+                            while i in checked:
+                                checked.remove(i)
+                            checked.append([curr, False])
+                            return False
+
+
+        # Checks right position
+        if ((curr[1]+1) % self.dim) != 0:
+
+            # Checks if right was already checked
+            right = [item for item in checked if item[0][1] == (curr[1]+1)]
+            if right:
+                # Checks if right pos is free
+                if right[0][0][0] == curr[0] and right[0][1] == False:
+                    checked.append([curr, False])
+                    return False
+            else:
+                # Checks if right is filled
+                right = [item for item in self.filled if item[1] == (curr[1]+1)]
+
+                if not right:   # Right pos is free
+                    checked.append([curr, False])
+                    return False
+                else:           # Right pos is filled
+
+                    # Checks if right position is filled with an equal piece
+                    if right[0][0] == curr[0]:
+                        i = [curr, True]
+                        if i not in checked:
+                            checked.append(i)
+                        # Checks if group on right of current is closed
+                        if not self.closed_check(right[0], checked):
+                            while i in checked:
+                                checked.remove(i)
+                            checked.append([curr, False])
+                            return False
+
+        if [curr, True] not in checked:
+            checked.append([curr, True])
+
+        return True
 
 
     def getMat(self):
@@ -167,7 +301,7 @@ class Game():
                 return -1
             else:
                 return 1
-        
+
         if p ==1:
             zeros= s.getZeros2()
         else:
@@ -179,9 +313,8 @@ class Game():
             liberties.append(len(i))
 
         dim = s.getDim()
-        
-        return 1 - min(liberties)/(dim*dim);
 
+        return 1 - min(liberties)/(dim*dim);
 
     def actions(self, s):
         #returns list of valid moves at state "s"
@@ -201,13 +334,12 @@ class Game():
 
         aux = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if mat[i][k] == 0]
 
+
         rmv = []
         for mov in aux:
         	continue_flag = False
         	ind = coord2ind(mov[2]-1, mov[1]-1, dim)
-        	
         	if not s.surronding_zeros(ind, dim, filled):
-        		
         		for i in zerosCont:
         			if len(i) == 1 and i[0] == ind:
         				continue_flag = True
@@ -245,15 +377,20 @@ class Game():
             zerosCont = copy.deepcopy(s.getZeros1())
             player = 1
 
-        mat = copy.deepcopy(s.getMat())
-        filled = copy.deepcopy(s.getFilled())
+        #mat = copy.deepcopy(s.getMat())
+        mat = s.getMat()
+        #filled = copy.deepcopy(s.getFilled())
+        filled = s.getFilled()
         dim = s.getDim()
-        
+
 
         ind = coord2ind(a[2]-1, a[1]-1, dim)
 
-        mat[a[1]-1][a[2]-1] = a[0]
-        filled.append((a[0], ind))
+        #mat[a[1]-1][a[2]-1] = a[0]
+        mat = mat[:(a[1]-1)] + [mat[a[1]-1][:(a[2]-1)] + [a[0]] + mat[a[1]-1][a[2]:]] + mat[a[1]:]
+
+        #filled.append((a[0], ind))
+        filled = filled + [(a[0], ind)]
         filled.sort(key=lambda x:x[1])
 
         UpGroup=[]
@@ -477,10 +614,15 @@ class Game():
             zeros[i] = list(set(zeros[i]))
             if ind in zeros[i]:
                 zeros[i].remove(ind)
-        
+
         for i in range(len(zerosCont)):
             if ind in zerosCont[i]:
                 zerosCont[i].remove(ind)
+
+        #for zeros in [zeros1, zeros2]:
+        #    for i in zeros:
+        #        while ind in i:
+        #            i.remove(ind)
 
         if a[0] == 1:
             groups1 = groups
@@ -515,7 +657,7 @@ class Game():
         zeros2=[]
 
         for i in aux:
-            
+
             if i[0] == 1:
                 groups = groups1
             else:
@@ -557,9 +699,9 @@ class Game():
                 groups.append([i[1]])
 
 
-        
+
         for (groups, zeros) in [(groups1, zeros1),(groups2, zeros2)]:
-            
+
             cnt=0
             for k in groups:
                 zeros.append([])
@@ -570,16 +712,17 @@ class Game():
 
                     if (i + dim) < dim*dim and mat[coord[0]+1][coord[1]]==0 and (i+dim) not in zeros[cnt]:
                         zeros[cnt].append(i+dim)
-                    
+
                     if (i%dim) != 0 and mat[coord[0]][coord[1]-1]==0 and (i-1) not in zeros[cnt]:
                         zeros[cnt].append(i-1)
-                    
+
                     if ((i+1)%dim) != 0 and mat[coord[0]][coord[1]+1]==0 and (i+1) not in zeros[cnt]:
                         zeros[cnt].append(i+1)
                 cnt += 1
 
         self.state = State(mat, player, aux, dim, groups1, groups2, zeros1, zeros2)
         return self.state
+
 
 # Converts 2-D coordinates of a matrix in a positive integer index
 def coord2ind(x, y, s):

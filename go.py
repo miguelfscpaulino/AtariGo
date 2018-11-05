@@ -18,7 +18,7 @@ class State():
         self.groups2 = groups2
         self.zeros1 = zeros1
         self.zeros2 = zeros2
-        
+
 
     def surronding_zeros(self, pos, dim, filled):
 
@@ -56,7 +56,6 @@ class State():
                     zeros.append(pos+1)
                     break
 
-        #print('surr_zeros: ' + str(zeros))
         return zeros
 
 
@@ -304,7 +303,7 @@ class Game():
                 return -1
             else:
                 return 1
-        
+
         if p ==1:
             zeros= s.getZeros2()
         else:
@@ -316,13 +315,12 @@ class Game():
             liberties.append(len(i))
 
         dim = s.getDim()
-        
+
         return 1 - min(liberties)/(dim*dim);
+
 
     def actions(self, s):
         #returns list of valid moves at state "s"
-
-
 
         dim = s.getDim()
         player = s.getPlayer()
@@ -339,15 +337,11 @@ class Game():
 
         aux = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if mat[i][k] == 0]
 
-        
         rmv = []
         for mov in aux:
-        	#print('mov: ' + str(mov))
         	continue_flag = False
         	ind = coord2ind(mov[2]-1, mov[1]-1, dim)
-        	#print('ind: ' + str(ind))
         	if not s.surronding_zeros(ind, dim, filled):
-        		#print('ENTRA ASVASVASDAYV')
         		for i in zerosCont:
         			if len(i) == 1 and i[0] == ind:
         				continue_flag = True
@@ -355,7 +349,6 @@ class Game():
         		if continue_flag:
         			continue
 
-        		#print('continue_flag before zerosOwn:' + str(continue_flag))
         		for i in zerosOwn:
         			if ind in i:
         				if len(i) != 1:
@@ -366,78 +359,10 @@ class Game():
         		else:
         			rmv.append(mov)
 
-        #print('rmv: ' + str(rmv))
-        #print('aux: ' + str(aux))
-
         for k in rmv:
         	aux.remove(k)
 
         return aux
-
-
-
-        # # act = []
-        # dim = s.getDim()
-        # player = s.getPlayer()
-        # if player == 1:
-        #     nextplayer = 2
-        # else:
-        #     nextplayer = 1 
-        # mat = s.getMat()
-        # filled = s.getFilled()
-
-        # aux = [(player, i+1, k+1) for i in range(dim) for k in range(dim) if mat[i][k] == 0]
-        # b = []
-
-        # for i in aux:
-        #     if s.closed_check((player, coord2ind(i[2]-1, i[1]-1, dim)), []):
-        #         if (i[1]-2) >= 0:
-        #             if mat[i[1]-2][i[2]-1] != player:
-        #                 mat[i[1]-1][i[2]-1] = player
-        #                 s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #                 if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1]-2, dim)), []):
-        #                     mat[i[1]-1][i[2]-1] = 0
-        #                     s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #                     continue
-        #                 mat[i[1]-1][i[2]-1] = 0
-        #                 s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #         if i[1] < dim:
-        #             if mat[i[1]][i[2]-1] != player:
-        #                 mat[i[1]-1][i[2]-1] = player
-        #                 s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #                 if s.closed_check((nextplayer, coord2ind(i[2]-1, i[1], dim)), []):
-        #                     mat[i[1]-1][i[2]-1] = 0
-        #                     s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #                     continue
-        #                 mat[i[1]-1][i[2]-1] = 0
-        #                 s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #         if (i[2]-2) >= 0:
-        #             if mat[i[1]-1][i[2]-2] != player:
-        #                 mat[i[1]-1][i[2]-1] = player
-        #                 s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #                 if s.closed_check((nextplayer, coord2ind(i[2]-2, i[1]-1, dim)), []):
-        #                     mat[i[1]-1][i[2]-1] = 0
-        #                     s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #                     continue
-        #                 mat[i[1]-1][i[2]-1] = 0
-        #                 s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #         if i[2] < dim:
-        #             if mat[i[1]-1][i[2]] != player:
-        #                 mat[i[1]-1][i[2]-1] = player
-        #                 s.addFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #                 if s.closed_check((nextplayer, coord2ind(i[2], i[1]-2, dim)), []):
-        #                     mat[i[1]-1][i[2]-1] = 0
-        #                     s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-        #                     continue
-        #                 mat[i[1]-1][i[2]-1] = 0
-        #                 s.removeFilled((player, coord2ind(i[2]-1, i[1]-1, dim)))
-
-        #         b.append(i)
-
-        # for k in b:
-        #     aux.remove(k)
-
-        # return aux
 
 
     def result(self, s, a):
@@ -454,15 +379,16 @@ class Game():
             zerosCont = copy.deepcopy(s.getZeros1())
             player = 1
 
-        mat = copy.deepcopy(s.getMat())
-        filled = copy.deepcopy(s.getFilled())
+        mat = s.getMat()
+        filled = s.getFilled()
         dim = s.getDim()
-        
+
 
         ind = coord2ind(a[2]-1, a[1]-1, dim)
 
-        mat[a[1]-1][a[2]-1] = a[0]
-        filled.append((a[0], ind))
+        mat = mat[:(a[1]-1)] + [mat[a[1]-1][:(a[2]-1)] + [a[0]] + mat[a[1]-1][a[2]:]] + mat[a[1]:]
+
+        filled = filled + [(a[0], ind)]
         filled.sort(key=lambda x:x[1])
 
         UpGroup=[]
@@ -686,15 +612,10 @@ class Game():
             zeros[i] = list(set(zeros[i]))
             if ind in zeros[i]:
                 zeros[i].remove(ind)
-        
+
         for i in range(len(zerosCont)):
             if ind in zerosCont[i]:
                 zerosCont[i].remove(ind)
-
-        #for zeros in [zeros1, zeros2]:
-        #    for i in zeros:
-        #        while ind in i:
-        #            i.remove(ind)
 
         if a[0] == 1:
             groups1 = groups
@@ -729,7 +650,7 @@ class Game():
         zeros2=[]
 
         for i in aux:
-            
+
             if i[0] == 1:
                 groups = groups1
             else:
@@ -771,9 +692,9 @@ class Game():
                 groups.append([i[1]])
 
 
-        
+
         for (groups, zeros) in [(groups1, zeros1),(groups2, zeros2)]:
-            
+
             cnt=0
             for k in groups:
                 zeros.append([])
@@ -784,10 +705,10 @@ class Game():
 
                     if (i + dim) < dim*dim and mat[coord[0]+1][coord[1]]==0 and (i+dim) not in zeros[cnt]:
                         zeros[cnt].append(i+dim)
-                    
+
                     if (i%dim) != 0 and mat[coord[0]][coord[1]-1]==0 and (i-1) not in zeros[cnt]:
                         zeros[cnt].append(i-1)
-                    
+
                     if ((i+1)%dim) != 0 and mat[coord[0]][coord[1]+1]==0 and (i+1) not in zeros[cnt]:
                         zeros[cnt].append(i+1)
                 cnt += 1
@@ -796,7 +717,7 @@ class Game():
         return self.state
 
 
-def alphabeta_cutoff_search(state, game, d=0, cutoff_test=None, eval_fn=None):
+def alphabeta_cutoff_search(state, game, d=3, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
     This version cuts off search and uses an evaluation function."""
 
@@ -869,38 +790,10 @@ if __name__ == '__main__':
     s = g.load_board(fileID)
     s.printState()
 
-    actions = g.actions(s)
-    print('actions: ' + str(actions))
+    # actions = g.actions(s)
+    # print('actions: ' + str(actions))
 
-
-    #print('\n')
-
-    #s = g.result(s, (1,2,2))
-    #s.printState()
-    #print('utility: ' + str(g.utility(s,1)))
-    # s.printState()
-    # move = (2,5,4)
-    # s = g.result(s, move)
-    # s.printState()
     # print('\n\nTerminal: ' + str(g.terminal_test(s)))
-    # utilityresult = g.utility(s, 1)
-    # print('\nutilityresult: ' + str(utilityresult))
-
-    #actions = g.actions(s)
-    #print(actions)
-
-    # s.printState()
-    # # print('\n\nTerminal: ' + str(g.terminal_test(s)))
-
-    # # i = 1
-    # # while i < 2:
-    # #     actions = g.actions(s)
-    # #     print('\n\nActions: ' + str(actions))
-    # #     s = g.result(s, actions[int(len(actions)/2)])
-    # #     s.printState()
-    # #     i = i + 1
-    # #
-    # # print('\nutility: ' + str(g.utility(s, 1)))
 
     # player = s.getPlayer()
     # while True:
@@ -915,4 +808,4 @@ if __name__ == '__main__':
     #         print('\nGAME ENDED: ' + str(utilityresult))
     #         s.printState()
     #         break
-    #print('move: ' + str(alphabeta_cutoff_search(s, g)))
+    print('move: ' + str(alphabeta_cutoff_search(s, g)))
