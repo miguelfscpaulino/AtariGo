@@ -1,9 +1,11 @@
 # Atari Go
 
-TO DO:
+First project for the Artificial Intelligent course in Instituto Superior Técnico, Universidade de Lisboa.
 
-  -otimize
-  
-DONE:
+## Objective:
+	Develop an Atari Go game engine, to interface an existing alpha-beta search with cutoff algorithm implementation.
 
-  -everything: submission (131s + 33s)
+## Team
+	Francisco Costa
+	João Mak Duarte
+	Miguel Paulino
